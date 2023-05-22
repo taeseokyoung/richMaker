@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "rich-maker"
+version = "0.0.0"
+description = ""
+authors = ["Kyoung <105770887+taeseokyoung@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "rich_maker"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+djangorestframework-simplejwt = "^5.2.2"
+mysqlclient = "^2.1.1"
+python-dotenv = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
