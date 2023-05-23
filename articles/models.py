@@ -11,8 +11,8 @@ class Challenge(models.Model):
     period = models.CharField("목표 기간", max_length=10)
     created_at = models.DateTimeField("생성 시간", auto_now_add=True)
     updated_at = models.DateTimeField("수정 시간", auto_now=True)
-    # bookmarks = models.ManyToManyField(User, related_name="challenge_bookmarks", black=True)
-    # members = models.ManyToManyField(User, related_name="challenge_members", black=True)
+    bookmarks = models.ManyToManyField(User, related_name="challenge_bookmarks", black=True)
+    members = models.ManyToManyField(User, related_name="challenge_members", black=True)
 
 
 class ChallengeImage(models.Model):

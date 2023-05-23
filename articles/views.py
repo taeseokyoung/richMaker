@@ -54,3 +54,32 @@ class ChallengeDatailView(APIView):
         if request.user == challenge.user:
             
             return Response({"message":"delete!"})
+    
+
+class ChallengeBookmarkView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    def post(self, request, challenge_id):
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        if request.user in challenge.likes.all():
+            challenge.likes.remove(request.user)
+            return Response("북마크를 해제하였습니다.", status=status.HTTP_204_NO_CONTENT)
+        else:
+            challenge.likes.add(request.user)
+            return Response("챌린지를 북마크에 저장하였습니다.", status=status.HTTP_200_OK)
+
+
+class ChallengeMemberView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    def get(self, request):
+        challenge = Challenge.objects.all()
+        serializer = ChallengeSerializer(challenge, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, challenge_id):
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        if request.user in challenge.likes.all():
+            challenge.likes.remove(request.user)
+            return Response("북마크를 해제하였습니다.", status=status.HTTP_204_NO_CONTENT)
+        else:
+            challenge.likes.add(request.user)
+            return Response("챌린지를 북마크에 저장하였습니다.", status=status.HTTP_200_OK)
