@@ -4,7 +4,7 @@ from django.db import models
 
 
 class Challenge(models.Model):
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    # user = models.ForeignKey('users.User', on_delete=models.CASCADE)
     challenge_title = models.CharField("챌린지명", max_length=50)
     challenge_content = models.TextField("내용")
     amount = models.IntegerField("목표 금액")
@@ -16,3 +16,6 @@ class Challenge(models.Model):
 class ChallengeImage(models.Model):
     challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE)
     image = models.ImageField(default='media/no_image.jpg', upload_to = 'challenge', blank=True, null=True)
+
+class Comment(models.Model):
+    comment_title = models.TextField(default="Comment")
