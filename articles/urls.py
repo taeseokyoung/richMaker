@@ -14,12 +14,10 @@ urlpatterns = [
     path('post/minus/<str:date>/', views.AccountShortView.as_view(), name="minus_date_view"),
     # 저축 작성
     path('post/plus/', views.AccountPlusView.as_view(), name="plus_view"),
-    # 저축 수정, 삭제
-    path('post/plus/<int:plus_id>',views.AccountPlusView.as_view(), name="plus_update"),
-    # 저축액 챌린지별로 보기
-    path('post/plus/<int:challenge_id>',views.AccountPlusView.as_view(), name="plus_challenge_view"),
+    # 저축 수정, 삭제, 저축액 챌린지별로 보기
+    path('post/plus/<int:plus_id>/', views.AccountPlusView.as_view(), name="plus_update"),
     # 챌린지 url
     path('challenge/', views.ChallengeView.as_view(), name='challenge_view'),
-    path('challenge/post', views.ChallengeWriteView.as_view(), name='challenge_post_view'),
-    path('challenge/<int:challenge_id>', views.ChallengeDatailView.as_view(), name='challenge_detail_view'),
+    path('challenge/post/', views.ChallengeWriteView.as_view(), name='challenge_post_view'),
+    path('challenge/<int:challenge_id>/', views.ChallengeDatailView.as_view(), name='challenge_detail_view'),
 ]
