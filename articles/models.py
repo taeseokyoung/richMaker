@@ -4,7 +4,7 @@ from datetime import date
 
 # Create your models here.
 class Challenge(models.Model):
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    # user = models.ForeignKey('users.User', on_delete=models.CASCADE)
     challenge_title = models.CharField("챌린지명", max_length=50)
     challenge_content = models.TextField("내용")
     amount = models.IntegerField("목표 금액")
@@ -57,3 +57,8 @@ class Accountminus(models.Model):
 
     def __str__(self):
         return self.placename + str(self.minus_money*self.amount)
+
+      
+class Comment(models.Model):
+    comment_title = models.TextField(default="Comment")
+

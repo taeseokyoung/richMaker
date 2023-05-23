@@ -6,4 +6,3 @@ admin.site.register(Accountminus)
 admin.site.register(Accountplus)
 admin.site.register(Income)
 admin.site.register(ConsumeStyle)
-
