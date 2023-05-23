@@ -110,7 +110,7 @@ class UserLikes(APIView):
     # 댓글에 좋아요 누른 사람들의 정보 불러오기
     def get(self, request, comment_id):
         try:
-            comment = get_object_or_404(Challenge, id=comment_id)
+            comment = get_object_or_404(Comment, id=comment_id)
         except AttributeError:
             return Response({"message": "게시글을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         serializer = GetCommentLikeUserInfo(comment)
