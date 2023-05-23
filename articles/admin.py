@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import Challenge,Account,Comment
 
-# Register your models here.
+admin.site.register(Challenge)
+admin.site.register(Account)
+admin.site.register(Comment)
