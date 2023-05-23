@@ -5,8 +5,9 @@ from rest_framework.generics import get_object_or_404
 from .models import User
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializer import ComtomTokenObtainPairSerializer,UserSerializer,ReadUserSerializer
+from . import validated
 
-# Create your views here.
+
 class UserView(APIView):
     # 회원 정보 수정
     def put(self, request, user_id):
@@ -28,8 +29,13 @@ class UserView(APIView):
         if request.user == owner:
             owner.is_active = False
             owner.save()
+            return Response({"message": "휴면 계정으로 전환 되었습니다."}, status=status.HTTP_200_OK)
         else:
             return Response({"message":"권한이 없습니다."},status=status.HTTP_400_BAD_REQUEST)
+
+    # 수입,지출 관리
+    def fetch(self,request):
+        pass
 
 class ProfileView(APIView):
     # 프로필 정보 읽기
@@ -38,9 +44,7 @@ class ProfileView(APIView):
     # 프로필 정보 수정
     def put(self,request):
         pass
-    # 수입,지출 관리
-    def fetch(self,request):
-        pass
+
 
 class UserAPIView(APIView):
     # 회원 가입
@@ -48,9 +52,29 @@ class UserAPIView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message':'가입 되셨습니다.'},status=status.HTTP_200_OK)
+            email = serializer.validated_data.get("email")
+            owner = get_object_or_404(User,email=email)
+            owner.auth_code = validated.send_email(email)
+            owner.save()
+
+            return Response({'message':'가입 되셨습니다. 이메일 인증을 해주세요.'},status=status.HTTP_200_OK)
         else:
             return Response({'message':serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self,request):
+        owner = get_object_or_404(User,email = request.data['email'])
+
+        if owner.auth_code == '':
+            return Response({"message":"인증 코드가 올바르지 않습니다."},status=status.HTTP_400_BAD_REQUEST)
+        if not owner.auth_code == request.data['auth_code']:
+            return Response({"message":"인증 코드가 올바르지 않습니다."},status=status.HTTP_401_UNAUTHORIZED)
+
+        owner.auth_code = ''
+        owner.is_active = True
+        owner.save()
+        return Response({"message":"인증 되었습니다."},status=status.HTTP_200_OK)
+
+
 
 class UserLikes(APIView):
     # like 등록

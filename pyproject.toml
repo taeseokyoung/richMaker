@@ -11,6 +11,7 @@ python = "^3.11"
 djangorestframework-simplejwt = "^5.2.2"
 mysqlclient = "^2.1.1"
 python-dotenv = "^1.0.0"
+pillow = "^9.5.0"
 
 
 [build-system]

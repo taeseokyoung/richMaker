@@ -3,7 +3,7 @@ from . import views
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
-    path('profile/<int:user_id>/', views.ProfileView, name='profile_view'),
+    path('profile/<int:user_id>/', views.ProfileView.as_view(), name='profile_view'),
     path('<int:user_id>/', views.UserView.as_view(), name='user_view'),
     path('sign-up/', views.UserAPIView.as_view(), name="sing_up"),
     # JWT Token 발급

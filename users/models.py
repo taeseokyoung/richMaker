@@ -3,8 +3,7 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None):
-
-        if password:
+        if not password:
             raise ValueError('사용자의 비밀번호는 필수 입력 사항 입니다.')
         elif not username:
             raise ValueError('사용자 별명은 필수 입력 사항 입니다.')
@@ -32,8 +31,6 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-
-
 class User(AbstractBaseUser):
     email = models.EmailField("이메일 주소", max_length=100, unique=True)
     username = models.CharField("사용자이름", max_length=20)
@@ -44,18 +41,14 @@ class User(AbstractBaseUser):
     created_at = models.DateTimeField("가입일", auto_now_add=True)
     updated_at = models.DateTimeField("수정일", auto_now=True)
     money = models.PositiveIntegerField(default=0)
-
-
-    # 관리자 권한
-    is_admin = models.BooleanField(default=False)
-    # 계정 활성화
-    is_active = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False) # 관리자 권한
+    is_active = models.BooleanField(default=False) # 계정 활성화
 
     # 로그인에 필요한 필드 지정
     USERNAME_FIELD = 'email'
 
     # object를 생성할 때 필수 입력받을 필드 지정
-    REQUIRED_FIELDS = [ 'username']
+    REQUIRED_FIELDS = ['username','password']
     objects = UserManager()
 
     def __str__(self):
