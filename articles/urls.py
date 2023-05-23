@@ -1,5 +1,7 @@
 from django.urls import path
 from articles import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     # 수입 작성, 보기
@@ -19,5 +21,6 @@ urlpatterns = [
     # 챌린지 url
     path('challenge/', views.ChallengeView.as_view(), name='challenge_view'),
     path('challenge/post/', views.ChallengeWriteView.as_view(), name='challenge_post_view'),
-    path('challenge/<int:challenge_id>/', views.ChallengeDatailView.as_view(), name='challenge_detail_view'),
+    path('challenge/post/<int:challenge_id>/', views.ChallengeDatailView.as_view(), name='challenge_detail_view'),
+    path('challenge/delete/<int:challenge_id>/', views.ChallengeMemberView.as_view(), name='challenge_member_view'),
 ]
