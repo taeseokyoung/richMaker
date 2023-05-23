@@ -1,5 +1,4 @@
-import random
-import re
+import random,re
 from django.core.mail import EmailMessage
 # 검증 및 이메일 발송
 def send_email(email):
@@ -15,27 +14,45 @@ def send_email(email):
     return code
 
 
+# 비밀번호만 검증
 def validated_password(password):
+    password_pattern = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+    password_match = re.match(password_pattern, password)
+    return bool(password_match)
+
+# 유저 이름 검증
+def validated_username(username):
     check = [
-        lambda element: all(
-            x.isdigit() or x.islower() or x.isupper() or (x in ['!', '@', '#', '$', '%', '^', '&', '*', '_']) for x
-            in element),
-        # 요소 하나 하나를 순환하며 숫자,소문자,대문자,지정된 특수문자 제외한 요소가 있을경우 False
         lambda element: len(element) == len(element.replace(" ", "")),
         # 공백이 포함 되어 있을 경우 False
-        lambda element: True if (len(element) > 7 and len(element) < 21) else False,
-        # 전달된 값의 개수가 8~20 사이일 경우 True
-        lambda element: any(x.islower() or x.isupper() for x in element),
-        # 요소 하나하나를 순환하며, 요소중 대문자 또는 소문자가 있어야함(숫자로만 가입 불가능)
-        lambda element: any(map(lambda x: x in element, ['!', '@', '#', '$', '%', '^', '&', '*', '_'])),
-        # 요소를 순환하며 최소 하나 이상의 특수기호가 있는지 확인
+        lambda element: True if (len(element) > 1 and len(element) < 21) else False,
+        # 전달된 값의 개수가 1~20 사이일 경우 True
     ]
     for i in check:
-        if not i(password):
+        if not i(username):
             return False
     return True
-    # good bye...
-    # pattern = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
-    # match = re.match(pattern, password)
-    # return bool(match)
 
+# email,password,username 검증
+def validated_data(email,password,username):
+    password_pattern = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+    password_match = re.match(password_pattern, password)
+    email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    email_match = re.match(email_pattern, email)
+
+    if not bool(password_match):
+        return "비밀번호가 올바르지 않습니다."
+    elif not bool(email_match):
+        return "이메일이 올바르지 않습니다."
+
+    check =[
+        lambda element: len(element) == len(element.replace(" ", "")),
+        # 공백이 포함 되어 있을 경우 False
+        lambda element: True if (len(element) > 1 and len(element) < 21) else False,
+        # 전달된 값의 개수가 1~20 사이일 경우 True
+    ]
+    for i in check:
+        if not i(username):
+            return "유저이름이 올바르지 않습니다."
+
+    return True
