@@ -49,6 +49,7 @@ class IncomeSerializer(serializers.ModelSerializer):
 # 지출액 작성, 자세히 보여주기, 수정하기
 class AccountminusSerializer(serializers.ModelSerializer):
     totalminus = serializers.SerializerMethodField()
+    style = ConsumerstyleSerializer(many=True)
     
     class Meta:
         model=Accountminus
