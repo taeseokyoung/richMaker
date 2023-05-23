@@ -1,6 +1,8 @@
 from django.urls import path
-from articles.views import ArticleView
+from articles import views
 
 urlpatterns = [
-    # path('', ArticleView.as_view(), name='article_view'),
+    path('challenge/', views.ChallengeView.as_view(), name='challenge_view'),
+    path('challenge/post', views.ChallengeWriteView.as_view(), name='challenge_post_view'),
+    path('challenge/<int:challenge_id>', views.ChallengeDatailView.as_view(), name='challenge_detail_view'),
 ]

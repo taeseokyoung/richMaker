@@ -6,8 +6,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializer import ComtomTokenObtainPairSerializer,UserSerializer,ReadUserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo
 from .models import User
 from . import validated
-from articles.models import Challenge,Account,Comment
-
+from articles.models import Challenge, Comment
 
 class UserView(APIView):
     # 회원 정보 수정
@@ -107,10 +106,7 @@ class UserAPIView(APIView):
 class UserLikes(APIView):
     # 댓글에 좋아요 누른 사람들의 정보 불러오기
     def get(self, request, comment_id):
-        try:
-            comment = get_object_or_404(Comment, id=comment_id)
-        except AttributeError:
-            return Response({"message": "게시글을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        comment = get_object_or_404(Comment, id=comment_id)
         serializer = GetCommentLikeUserInfo(comment)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
