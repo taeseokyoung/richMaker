@@ -1,7 +1,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm,visualstudiocode,macos,windows,venv
 # Edit at https://www.toptal.com/developers/gitignore?templates=pycharm,visualstudiocode,macos,windows,venv
 
-
+migrations
 .env
 ### Django ###
 *.log
