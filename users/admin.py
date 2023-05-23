@@ -49,7 +49,7 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {'fields': ('email','username')}),
         # test 환경에서 profile_image를 조작하고 배포때는 빼보는게 어떨까 싶다.
-        ('Permissions', {'fields': ('is_admin','is_active','profile_image','bookmark')}),
+        ('Permissions', {'fields': ('is_admin','is_active','profile_image')}),
     )
     add_fieldsets = (
         (None, {

@@ -38,7 +38,7 @@ class UserView(APIView):
         else:
             return Response({"message":"권한이 없습니다."},status=status.HTTP_400_BAD_REQUEST)
 
-    # 수입,지출 관리
+    # 수입,지출 관리?????????
     def fetch(self,request):
         pass
 
