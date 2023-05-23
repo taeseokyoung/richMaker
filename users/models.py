@@ -1,6 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 
+# articles app import
+from articles.models import Challenge,Account,Comment
+
+
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None):
         if not password:
@@ -44,6 +48,15 @@ class User(AbstractBaseUser):
     is_admin = models.BooleanField(default=False) # 관리자 권한
     is_active = models.BooleanField(default=False) # 계정 활성화
 
+    # 챌린지 멤버
+    bookmark = models.ManyToManyField(Challenge, symmetrical=False, related_name='bookmarking_people', blank=True)
+    # 댓글 좋아요
+    likes = models.ManyToManyField(Comment, symmetrical=False, related_name='liking_people', blank=True)
+
+
+
+
+
     # 로그인에 필요한 필드 지정
     USERNAME_FIELD = 'email'
 
@@ -65,3 +78,9 @@ class User(AbstractBaseUser):
     def is_staff(self):
         return self.is_admin
 
+
+class History(models.Model):
+    # user_id = models.ForeignKey(User,on_delete=models.CASCADE) # 유저 정보가 사라지면 같이 삭제
+    user_id = models.ForeignKey(User,on_delete=models.PROTECT) # 유저 정보가 사라지면 같이 삭제
+    feed_id = models.OneToOneField(Account,on_delete=models.PROTECT)
+    money = models.IntegerField(blank=True)

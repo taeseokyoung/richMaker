@@ -33,10 +33,25 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+class GetBookmarkUserInfo(serializers.ModelSerializer):
+    bookmarking_people = serializers.StringRelatedField(many=True)
+    bookmarking_people_count = serializers.SerializerMethodField()
 
+    def get_bookmarking_people_count(self,obj):
+        return obj.bookmarking_people.count()
+    class Meta:
+        model = User
+        fields = ('bookmarking_people','bookmarking_people_count')
 
+class GetCommentLikeUserInfo(serializers.ModelSerializer):
+    liking_people = serializers.StringRelatedField(many=True)
+    liking_people_count = serializers.SerializerMethodField()
 
-
+    def get_liking_people_count(self,obj):
+        return obj.liking_people.count()
+    class Meta:
+        model = User
+        fields = ('liking_people','liking_people_count')
 
 
 

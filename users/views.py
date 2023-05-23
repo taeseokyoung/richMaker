@@ -2,10 +2,11 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
-from .models import User
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializer import ComtomTokenObtainPairSerializer,UserSerializer,ReadUserSerializer
+from .serializer import ComtomTokenObtainPairSerializer,UserSerializer,ReadUserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo
+from .models import User
 from . import validated
+from articles.models import Challenge,Account,Comment
 
 
 class UserView(APIView):
@@ -75,7 +76,6 @@ class UserAPIView(APIView):
     # 이메일 인증 , 비밀번호 찾기
     def put(self,request):
         owner = get_object_or_404(User,email = request.data['email'])
-        print(owner.auth_code)
         if owner.auth_code == '':
             return Response({"message":"인증 코드가 올바르지 않습니다."},status=status.HTTP_400_BAD_REQUEST)
         elif not owner.auth_code == request.data['auth_code']:
@@ -99,28 +99,63 @@ class UserAPIView(APIView):
         return Response({"message":"인증 되었습니다."},status=status.HTTP_200_OK)
 
 
-
+# 반례
+# 1. 사용자는 자기 자신의 게시글을 좋아요, 북마크 할 수 있게 할 것인가?
 class UserLikes(APIView):
-    # like 등록
-    def post(self, request):
-        pass
-    # like 수정
-    def put(self,request):
-        pass
+    # 댓글에 좋아요 누른 사람들의 정보 불러오기
+    def get(self, request, comment_id):
+        try:
+            comment = get_object_or_404(Challenge, id=comment_id)
+        except AttributeError:
+            return Response({"message": "게시글을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = GetCommentLikeUserInfo(comment)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # 사용자가 댓글을 좋아요, 좋아요 취소
+    def post(self, request,comment_id):
+        try :
+            user = get_object_or_404(User,email = request.user.email)
+        except AttributeError:
+            return Response({"message": "로그인이 필요합니다."}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            comment = get_object_or_404(Comment,id=comment_id)
+        except AttributeError:
+            return Response({"message": "댓글이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+        # 해당 댓글 정보가 유저의 many to many 필드 데이터에 있다면 좋아요 취소
+        if comment in user.likes.all():
+            user.likes.remove(comment)
+            return Response({"message":"like cancel"}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            user.likes.add(comment)
+            return Response({"message": "add cancel"}, status=status.HTTP_201_CREATED)
 
 class UserBookMark(APIView):
-    # bookMark 등록
-    def post(self, request):
-        pass
-    # bookMark 수정
-    def put(self,request):
-        pass
+    # 챌린지 게시글에 북마크 등록한 사람들의 정보 불러오기
+    def get(self,request,challenge_id):
+        try:
+            challenge = get_object_or_404(Challenge,id=challenge_id)
+        except AttributeError:
+            return Response({"message": "게시글을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = GetBookmarkUserInfo(challenge)
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
-class UserWish(APIView):
-    # 찜목록 등록
-    def post(self, request):
-        pass
+    # 사용자가 북마크 등록, 등록 취소
+    def post(self, request,challenge_id):
+        try:
+            user = get_object_or_404(User, email=request.user.email)
+        except AttributeError:
+            return Response({"message": "로그인이 필요합니다."}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            challenge = get_object_or_404(Challenge,id=challenge_id)
+        except AttributeError:
+            return Response({"message": "게시글을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
+        if challenge in user.bookmark.all():
+            user.bookmark.remove(challenge)
+            return Response({"message":"bookmark cancel"}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            user.bookmark.add(challenge)
+            return Response({"message": "add bookmark"}, status=status.HTTP_201_CREATED)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):

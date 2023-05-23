@@ -9,7 +9,6 @@ urlpatterns = [
     path('login/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('sign-up/', views.UserAPIView.as_view(), name="sing_up"),
-    path('likes/', views.UserLikes.as_view(), name="lieks"),
-    path('bookmark/',views.UserBookMark.as_view(), name="bookmark"),
-    path('wish/',views.UserWish.as_view(), name="wish"),
+    path('likes/<int:comment_id>/', views.UserLikes.as_view(), name="lieks"),
+    path('bookmark/<int:challenge_id>/',views.UserBookMark.as_view(), name="bookmark"),
 ]
