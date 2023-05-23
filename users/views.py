@@ -6,7 +6,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializer import ComtomTokenObtainPairSerializer,UserSerializer,ReadUserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo
 from .models import User
 from . import validated
-from articles.models import Challenge, Comment
+from articles.models import Challenge
 
 class UserView(APIView):
     # 회원 정보 수정
@@ -102,29 +102,38 @@ class UserAPIView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+          
+# 반례
+# 1. 사용자는 자기 자신의 게시글을 좋아요, 북마크 할 수 있게 할 것인가?
+# class UserLikes(APIView):
+#     # 댓글에 좋아요 누른 사람들의 정보 불러오기
+#     def get(self, request, comment_id):
+#         try:
+#             comment = get_object_or_404(Challenge, id=comment_id)
+#         except AttributeError:
+#             return Response({"message": "게시글을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+#         serializer = GetCommentLikeUserInfo(comment)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class UserLikes(APIView):
-    # 댓글에 좋아요 누른 사람들의 정보 불러오기
-    def get(self, request, comment_id):
-        comment = get_object_or_404(Comment, id=comment_id)
-        serializer = GetCommentLikeUserInfo(comment)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+#     # 사용자가 댓글을 좋아요, 좋아요 취소
+#     def post(self, request,comment_id):
+#         try :
+#             user = get_object_or_404(User,email = request.user.email)
+#         except AttributeError:
+#             return Response({"message": "로그인이 필요합니다."}, status=status.HTTP_401_UNAUTHORIZED)
+#         try:
+#             comment = get_object_or_404(Comment,id=comment_id)
+#         except AttributeError:
+#             return Response({"message": "댓글이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+#         # 해당 댓글 정보가 유저의 many to many 필드 데이터에 있다면 좋아요 취소
+#         if comment in user.likes.all():
+#             user.likes.remove(comment)
+#             return Response({"message":"like cancel"}, status=status.HTTP_204_NO_CONTENT)
+#         else:
+#             user.likes.add(comment)
+#             return Response({"message": "add cancel"}, status=status.HTTP_201_CREATED)
 
-    # 사용자가 댓글을 좋아요, 좋아요 취소
-    def post(self, request,comment_id):
-        try :
-            user = get_object_or_404(User,email = request.user.email)
-        except AttributeError:
-            return Response({"message": "로그인이 필요합니다."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        comment = get_object_or_404(Comment,id=comment_id)
-        # 해당 댓글 정보가 유저의 many to many 필드 데이터에 있다면 좋아요 취소
-        if comment in user.comment_like.all():
-            user.comment_like.remove(comment)
-            return Response({"message":"like cancel"}, status=status.HTTP_204_NO_CONTENT)
-        else:
-            user.comment_like.add(comment)
-            return Response({"message": "add cancel"}, status=status.HTTP_201_CREATED)
 
 class UserBookMark(APIView):
     # 챌린지 게시글에 북마크 등록한 사람들의 정보 불러오기
