@@ -6,8 +6,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializer import ComtomTokenObtainPairSerializer,UserSerializer,ReadUserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo
 from .models import User
 from . import validated
-from articles.models import Challenge,Account,Comment
-
+from articles.models import Challenge, Comment
 
 class UserView(APIView):
     # 회원 정보 수정
