@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from articles.models import Accountminus, Accountplus, Income, ConsumeStyle, Challenge, ChallengeImage
+from users.models import User
 
 # 챌린지
 class ChallengeSerializer(serializers.ModelSerializer):
@@ -12,22 +13,30 @@ class ChallengeSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Challenge
-        fields = ["id", "challenge_title", "challenge_content","amount", "period", "created_at", "updated_at", "images"]
+        fields = '__all__'
 
     def create(self, validated_data):
         instance = Challenge.objects.create(**validated_data)
         image_set = self.context['request'].FILES
         for image_data in image_set.getlist('image'):
-            ChallengeImage.objects.create(diary=instance, image=image_data)
+            ChallengeImage.objects.create(Challenge=instance, image=image_data)
         return instance
 
-
+# 다중이미지
 class ChallengeImageSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True)
     class Meta:
         model = ChallengeImage
         fields = ['image']
 
+class ChallengeMemberSerializer(serializers.ModelSerializer):
+    bookmarking_people_count = serializers.SerializerMethodField()
+
+    def get_bookmarking_people_count(self,obj):
+        return obj.bookmarking_people.count()
+    class Meta:
+        model = User
+        fields = ('bookmarking_people_count',)
 
 # 소비경향
 class ConsumerstyleSerializer(serializers.ModelSerializer):
