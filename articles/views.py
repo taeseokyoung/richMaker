@@ -79,14 +79,9 @@ class IncomeView(APIView):
 
 
     def get(self, request):
-        income = Income.objects.filter(user=request.user)
-        
-        if income.user != request.user:
-            return Response({"error":"작성자만이 확인할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
-
-        serializer = IncomeSerializer(income, data=request.data)
-        
-        serializer = IncomeSerializer(income)
+        income = Income.objects.filter(user_id=request.user.id)
+        # print(request.user.id)
+        serializer = IncomeSerializer(income, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
         
@@ -174,12 +169,9 @@ class AccountShortView(APIView):
         except ValueError:
             return Response({"잘못된 형식입니다."}, status=status.HTTP_404_NOT_FOUND)
             
-        minus = Accountminus.objects.filter(date=parsed_date, user=request.user)
+        minus = Accountminus.objects.filter(date=parsed_date, user_id=request.user.id)
         
-        if minus.user != request.user:
-            return Response({"error":"작성자만이 확인할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
-
-        serializer = AccountminusShortSerializer(minus)
+        serializer = AccountminusShortSerializer(minus, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
@@ -197,10 +189,10 @@ class AccountPlusView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     # 챌린지 별 저축액 모아보기
-    def get(self, request, challenge_id):
-        plus = Accountplus.objects.filter(challenge_id=challenge_id, user=request.user)
+    def get(self, request, plus_id):
+        plus = Accountplus.objects.filter(challenge_id=plus_id, user=request.user)
         
-        serializer = AccountplusSerializer(plus)
+        serializer = AccountplusSerializer(plus, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def put(self, request, plus_id):
@@ -209,7 +201,7 @@ class AccountPlusView(APIView):
         if plus.user != request.user:
             return Response({"error":"작성자만이 수정할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
 
-        serializer = AccountminusSerializer(plus, data=request.data)
+        serializer = AccountplusSerializer(plus, data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
             return Response(serializer.data)
@@ -218,7 +210,7 @@ class AccountPlusView(APIView):
 
 
     def delete(self, request, plus_id):
-        plus = get_object_or_404(Accountminus, id=plus_id)
+        plus = get_object_or_404(Accountplus, id=plus_id)
         
         if plus.user != request.user:
             return Response({"error":"작성자만이 삭제할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
