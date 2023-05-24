@@ -1,34 +1,28 @@
 from rest_framework import serializers
-from articles.models import Accountminus, Accountplus, Income, ConsumeStyle, Challenge, ChallengeImage
+from articles.models import Accountminus, Accountplus, Income, ConsumeStyle, Challenge
 from users.models import User
+
 
 # 챌린지
 class ChallengeSerializer(serializers.ModelSerializer):
-    # images = serializers.ImageField(use_url=True)
-    images = serializers.SerializerMethodField()
-    
-    def get_images(self, obj):
-        image = obj.challengeimage_set.all()
-        return ChallengeImageSerializer(instance=image, many=True).data
-    
     class Meta:
         model = Challenge
         fields = '__all__'
 
-    def create(self, validated_data):
-        instance = Challenge.objects.create(**validated_data)
-        image_set = self.context['request'].FILES
-        for image_data in image_set.getlist('image'):
-            ChallengeImage.objects.create(Challenge=instance, image=image_data)
-        return instance
-
-# 다중이미지
-class ChallengeImageSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(use_url=True)
+class ChallengeWriteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ChallengeImage
-        fields = ['image']
+        model = Challenge
+        fields = ['challenge_title','challenge_content','amount','period','main_image','sub_image1','sub_image2','sub_image3']
 
+
+# 현재는 write와 동일하나 수정 시 제외되는 부분이 있었으면 합니다. (챌린지니까)
+class ChallengeDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Challenge
+        fields = ['challenge_title','challenge_content','amount','period','main_image','sub_image1','sub_image2','sub_image3']
+
+
+# 챌린지 멤버 카운트
 class ChallengeMemberSerializer(serializers.ModelSerializer):
     bookmarking_people_count = serializers.SerializerMethodField()
 
