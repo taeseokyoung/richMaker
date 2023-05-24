@@ -4,6 +4,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    # 소비경향보기
+    path('post/style/', views.ConsumerStyleView.as_view(), name="consumerstyle_view"),
     # 수입 작성, 보기
     path('post/income/', views.IncomeView.as_view(), name="income_view"),
     # 수입 수정, 삭제

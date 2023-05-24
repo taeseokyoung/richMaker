@@ -8,6 +8,7 @@ from articles.serializers import (
     AccountminusSerializer,
     AccountminusShortSerializer,
     AccountplusSerializer,
+    ConsumerstyleSerializer,
     ChallengeSerializer, 
     ChallengeImageSerializer,
     ChallengeMemberSerializer
@@ -230,4 +231,9 @@ class AccountPlusView(APIView):
 
         
 
-
+# 소비경향 view
+class ConsumerStyleView(APIView):
+    def get(self, request):
+        style = ConsumeStyle.objects.all()
+        serializer = ConsumerstyleSerializer(style, many=True)
+        return Response(serializer.data)
