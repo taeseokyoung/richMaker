@@ -5,9 +5,22 @@ from users.models import User
 
 # 챌린지
 class ChallengeSerializer(serializers.ModelSerializer):
+    # images = serializers.ImageField(use_url=True)
+    # images = serializers.SerializerMethodField()
+    
+    # def get_images(self, obj):
+    #     image = obj.challengeimage_set.all()
+    #     return ChallengeImageSerializer(instance=image, many=True).data
+    
     class Meta:
         model = Challenge
-        fields = '__all__'
+        fields = [
+            'challenge_title',
+            'challenge_content',
+            'amount',
+            'period',
+            # 'images',
+            ]
 
 class ChallengeWriteSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,6 +44,23 @@ class ChallengeMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('bookmarking_people_count',)
+        
+        
+class ChallengeListSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+    
+    def get_user(self, obj):
+        return obj.user.username
+    
+    class Meta:
+        model = Challenge
+        fields = [
+            'user',
+            'challenge_title',
+            'challenge_content',
+            'amount',
+            'period',
+        ]
 
 # 소비경향
 class ConsumerstyleSerializer(serializers.ModelSerializer):
