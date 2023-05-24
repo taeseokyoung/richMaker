@@ -24,3 +24,6 @@ urlpatterns = [
     path('challenge/post/<int:challenge_id>/', views.ChallengeDatailView.as_view(), name='challenge_detail_view'),
     path('challenge/delete/<int:challenge_id>/', views.ChallengeMemberView.as_view(), name='challenge_member_view'),
 ]
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -9,7 +9,6 @@ from articles.serializers import (
     AccountminusShortSerializer,
     AccountplusSerializer,
     ChallengeSerializer, 
-    ChallengeImageSerializer,
     ChallengeMemberSerializer
     )
 from articles.models import Income, Accountminus, Accountplus, ConsumeStyle, Challenge
@@ -33,14 +32,14 @@ class ChallengeWriteView(APIView):
         '''
         챌린지 쓰기
         '''
-        serializer = ChallengeSerializer(data=request.data)
+        serializer = ChallengeSerializer(data=request.data) 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response (serializer.errors)
 
-
+        
 class ChallengeDatailView(APIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def put(self, request, challenge_id):
