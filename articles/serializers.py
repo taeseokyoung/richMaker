@@ -7,12 +7,19 @@ from users.models import User
 class ChallengeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Challenge
-        fields = '__all__'
+        fields = [
+            'challenge_title',
+            'challenge_content',
+            'amount',
+            'period',
+            # 'images',
+            ]
+
 
 class ChallengeWriteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Challenge
-        fields = ['challenge_title','challenge_content','amount','period','main_image','sub_image1','sub_image2','sub_image3']
+        model = User
+        fields = ('bookmarking_people_count',)
 
 
 # 현재는 write와 동일하나 수정 시 제외되는 부분이 있었으면 합니다. (챌린지니까)
@@ -20,6 +27,23 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Challenge
         fields = ['challenge_title','challenge_content','amount','period','main_image','sub_image1','sub_image2','sub_image3']
+
+
+class ChallengeListSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+
+    def get_user(self, obj):
+        return obj.user.username
+
+    class Meta:
+        model = Challenge
+        fields = [
+            'user',
+            'challenge_title',
+            'challenge_content',
+            'amount',
+            'period',
+        ]
 
 
 # 챌린지 멤버 카운트
