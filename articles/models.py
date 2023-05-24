@@ -8,7 +8,7 @@ class Challenge(models.Model):
     challenge_title = models.CharField("챌린지명", max_length=50)
     challenge_content = models.TextField("내용")
     amount = models.IntegerField("목표 금액")
-    period = models.IntegerField("목표 기간", max_length=10)
+    period = models.IntegerField("목표 기간")
     created_at = models.DateTimeField("생성 시간", auto_now_add=True)
     updated_at = models.DateTimeField("수정 시간", auto_now=True)
     main_image = models.ImageField(upload_to='challenge', default='media/no_image.jpg')

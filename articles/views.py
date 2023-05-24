@@ -9,10 +9,13 @@ from articles.serializers import (
     AccountminusShortSerializer,
     AccountplusSerializer,
     ChallengeSerializer, 
-    ChallengeMemberSerializer
+    ChallengeMemberSerializer,
+    ChallengeListSerializer,
     )
 from articles.models import Income, Accountminus, Accountplus, ConsumeStyle, Challenge
 from datetime import datetime
+from django.utils import timezone
+from articles.pagination import ChallengePagination
 
 # Create your views here.
 
@@ -24,8 +27,67 @@ class ChallengeView(APIView):
         challenge = Challenge.objects.all()
         serializer = ChallengeSerializer(challenge, many=True)
         return Response(serializer.data)
+    
+class ChallengeListView(APIView):
+    """
+    신규 챌린지 별, 상위 챌린지 별 (추후 소비 통계 관련 데이터 포함)
+    """
+    pagination_class = ChallengePagination
+    serializer_class = ChallengeListSerializer
+    @property
+    def paginator(self):
+        if not hasattr(self, '_paginator'):
+            if self.pagination_class is None:
+                self._paginator = None
+            else:
+                self._paginator = self.pagination_class()
+        else:
+            pass
+        return self._paginator
+    
+    def paginate_queryset(self, queryset):
+        
+        if self.paginator is None:
+            return None
+        return self.paginator.paginate_queryset(queryset,
+                   self.request, view=self)
+        
+    def get_paginated_response(self, data):
+        assert self.paginator is not None
+        return self.paginator.get_paginated_response(data)
+    
 
-
+    def get(self, request):
+        if request.GET.get('query') == None:
+            current_time = timezone.now()
+            # 이달의 신규 챌린지
+            new_challenge_of_month = Challenge.objects.filter(created_at__range=(current_time - timezone.timedelta(days=30),current_time))
+            new_challenge_count = new_challenge_of_month.count()
+            new_challenge_serializer = ChallengeListSerializer(new_challenge_of_month, many=True)
+            
+            return Response({"new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data}}, status=status.HTTP_200_OK)
+        elif request.GET.get('query') == 'top':
+            # 일단 최신순. 추후 수정 필요
+            new_challenge = Challenge.objects.all().order_by('-created_at')
+            page = self.paginate_queryset(new_challenge)
+            if page is not None:
+                serializer = self.get_paginated_response(self.serializer_class(page, many=True).data)
+            else:
+                serializer = self.serializer_class(new_challenge, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        elif request.GET.get('query') == 'new':
+            new_challenge = Challenge.objects.all().order_by('-created_at')
+            page = self.paginate_queryset(new_challenge)
+            if page is not None:
+                serializer = self.get_paginated_response(self.serializer_class(page, many=True).data)
+            else:
+                serializer = self.serializer_class(new_challenge, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        
+        
+        
 class ChallengeWriteView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def post(self,request):
@@ -34,7 +96,7 @@ class ChallengeWriteView(APIView):
         '''
         serializer = ChallengeSerializer(data=request.data) 
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response (serializer.errors)
@@ -89,7 +151,6 @@ class IncomeView(APIView):
 
     def get(self, request):
         income = Income.objects.filter(user_id=request.user.id)
-        # print(request.user.id)
         serializer = IncomeSerializer(income, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
