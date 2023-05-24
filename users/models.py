@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
-from articles.models import Challenge, Account, Comment
+from articles.models import Challenge, Comment
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None):
         if not password:
@@ -74,14 +74,3 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_admin
-
-
-class History(models.Model):
-    # user_id = models.ForeignKey(User,on_delete=models.CASCADE) # 유저 정보가 사라지면 같이 삭제
-    user_id = models.ForeignKey(User,on_delete=models.PROTECT) # 유저 정보가 사라지면 같이 삭제
-    feed_id = models.OneToOneField(Account,on_delete=models.PROTECT)
-    money = models.IntegerField(blank=True)
-
-
-# 지출 내역 등록
-
