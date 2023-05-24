@@ -23,4 +23,7 @@ urlpatterns = [
     path('challenge/post/', views.ChallengeWriteView.as_view(), name='challenge_post_view'),
     path('challenge/post/<int:challenge_id>/', views.ChallengeDatailView.as_view(), name='challenge_detail_view'),
     path('challenge/delete/<int:challenge_id>/', views.ChallengeMemberView.as_view(), name='challenge_member_view'),
+    # 상세 API
+    path('challenge/list', views.ChallengeListView.as_view(), name='challenge_list_view'),
+    
 ]
