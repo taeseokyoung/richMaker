@@ -5,13 +5,6 @@ from users.models import User
 
 # 챌린지
 class ChallengeSerializer(serializers.ModelSerializer):
-    # images = serializers.ImageField(use_url=True)
-    # images = serializers.SerializerMethodField()
-    
-    # def get_images(self, obj):
-    #     image = obj.challengeimage_set.all()
-    #     return ChallengeImageSerializer(instance=image, many=True).data
-    
     class Meta:
         model = Challenge
         fields = [
