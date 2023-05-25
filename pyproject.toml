@@ -13,7 +13,12 @@ mysqlclient = "^2.1.1"
 python-dotenv = "^1.0.0"
 pillow = "^9.5.0"
 django-cors-headers = "^4.0.0"
+requests = "^2.31.0"
+pandas = "^2.0.1"
 
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.23.1"
 
 [build-system]
 requires = ["poetry-core"]

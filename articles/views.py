@@ -65,8 +65,15 @@ class ChallengeListView(APIView):
             new_challenge_of_month = Challenge.objects.filter(created_at__range=(current_time - timezone.timedelta(days=30),current_time))
             new_challenge_count = new_challenge_of_month.count()
             new_challenge_serializer = ChallengeListSerializer(new_challenge_of_month, many=True)
+            # 상위 챌린지
+            top_challenge_of_month = Challenge.objects.filter(created_at__range=(current_time - timezone.timedelta(days=30),current_time))[:5]
+            top_challenge_count = top_challenge_of_month.count()
+            top_challenge_serializer = ChallengeListSerializer(top_challenge_of_month, many=True)
+            
+            
 
-            return Response({"new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data}}, status=status.HTTP_200_OK)
+            return Response({"new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data},
+                             "top_challenge": {"count": top_challenge_count, "list": top_challenge_serializer.data}}, status=status.HTTP_200_OK)
         elif request.GET.get('query') == 'top':
             # 일단 최신순. 추후 수정 필요
             new_challenge = Challenge.objects.all().order_by('-created_at')
