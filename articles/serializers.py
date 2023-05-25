@@ -20,6 +20,11 @@ class ChallengeWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('bookmarking_people_count',)
+        
+class ChallengeUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Challenge
+        fields = ('challenge_title', 'user', )
 
 
 # 현재는 write와 동일하나 수정 시 제외되는 부분이 있었으면 합니다. (챌린지니까)
