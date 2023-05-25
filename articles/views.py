@@ -155,9 +155,9 @@ class IncomeView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-    def get(self, request):
-        income = Income.objects.filter(user_id=request.user.id)
+    # 날짜별 수입보기
+    def get(self, request, date):
+        income = Income.objects.filter(user_id=request.user.id, date=date)
         # print(request.user.id)
         serializer = IncomeSerializer(income, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -266,9 +266,9 @@ class AccountPlusView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    # 챌린지 별 저축액 모아보기
-    def get(self, request, plus_id):
-        plus = Accountplus.objects.filter(challenge_id=plus_id, user=request.user)
+    # 날짜별 저축액 모아보기
+    def get(self, request, date):
+        plus = Accountplus.objects.filter(date=date, user=request.user)
         
         serializer = AccountplusSerializer(plus, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
