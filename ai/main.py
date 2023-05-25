@@ -2,6 +2,7 @@ import requests
 import uuid
 import time
 import json
+import os
 
 
 def AiCheck(base64_string):
@@ -33,38 +34,35 @@ def AiCheck(base64_string):
     response = requests.request(
         "POST", api_url, headers=headers, data=payload, timeout=10)
     response_dict = json.loads(response.text)
-    # print(response.text)
+    response_dict = response_dict['images'][0]
+    print(response_dict)
     
-    # 추출
-    store_info = response_dict['images'][0]['receipt']['result']['storeInfo']
-    payment_info = response_dict['images'][0]['receipt']['result']['paymentInfo']
-    sub_results = response_dict['images'][0]['receipt']['result']['subResults']
-    total_price_dict = response_dict['images'][0]['receipt']['result']['totalPrice']
-    
-    biz_name = store_info['name']['formatted'].get('value', "") # 사업장 이름
-    biz_num = store_info['bizNum']['formatted'].get('value', "") # 사업자 등록번호
-    biz_address = store_info['addresses'][0]['formatted'].get('value', "") # 사업장 주소
-    biz_tel = store_info['tel'][0]['formatted'].get('value', "") # 사업장 전화번호
-    payment_date = payment_info['date'].get('text', "") # 거래 날짜
-    payment_time = payment_info['time'].get('text', "") # 거래 시간
-    payment_card = payment_info['cardInfo']['company']['formatted'].get('value', "") # 카드 회사
-    payment_card_number = payment_info['cardInfo']['number']['formatted'].get('value', "") # 카드 번호
-    payment_approved_number = payment_info['confirmNum'].get('text', "") # 승인 번호
-    items = {} # 구매한 아이템
-    for item in sub_results[0]['items']:
-        items[item['name']['formatted']['value']] = item['count']['formatted']['value']
-    total_price = total_price_dict['price']['formatted'].get('value', "") # 총 금액
+    store_name = response_dict.get('receipt', {}).get('result', {}).get('storeInfo', {}).get('name', {}).get('formatted', '')
+    biz_num = response_dict.get('receipt', {}).get('result', {}).get('storeInfo', {}).get('bizNum', {}).get('formatted', '')
+    address = response_dict.get('receipt', {}).get('result', {}).get('storeInfo', {}).get('addresses', [{}])[0].get('formatted', '')
+    phone_number = response_dict.get('receipt', {}).get('result', {}).get('storeInfo', {}).get('tel', [{}])[0].get('formatted', '')
+    payment_date = response_dict.get('receipt', {}).get('result', {}).get('paymentInfo', {}).get('date', {}).get('formatted', '')
+    payment_time = response_dict.get('receipt', {}).get('result', {}).get('paymentInfo', {}).get('time', {}).get('formatted', '')
+    card_company = response_dict.get('receipt', {}).get('result', {}).get('paymentInfo', {}).get('cardInfo', {}).get('company', {}).get('formatted', '')
+    card_number = response_dict.get('receipt', {}).get('result', {}).get('paymentInfo', {}).get('cardInfo', {}).get('number', {}).get('formatted', '')
+    confirm_number = response_dict.get('receipt', {}).get('result', {}).get('paymentInfo', {}).get('cardInfo', {}).get('confirmNum', {}).get('formatted', '')
+    item_name = response_dict.get('receipt', {}).get('result', {}).get('subResults', [{}])[0].get('items', [{}])[0].get('name', {}).get('formatted', '')
+    item_count = response_dict.get('receipt', {}).get('result', {}).get('subResults', [{}])[0].get('items', [{}])[0].get('count', {}).get('formatted', '')
+    total_price = response_dict.get('receipt', {}).get('result', {}).get('totalPrice', {}).get('price', {}).get('formatted', '')
+                
+
     
     return {
-        'biz_name': biz_name,
-        'biz_num': biz_num,
-        'biz_address': biz_address,
-        'biz_tel': biz_tel,
-        'payment_date': payment_date,
-        'payment_time': payment_time,
-        'payment_card': payment_card,
-        'payment_card_number': payment_card_number,
-        'payment_approved_number': payment_approved_number,
-        'items': items,
-        'total_price': total_price
+    'store_name': store_name,
+    'biz_num': biz_num,
+    'address': address,
+    'phone_number': phone_number,
+    'payment_date': payment_date,
+    'payment_time': payment_time,
+    'card_company': card_company,
+    'card_number': card_number,
+    'confirm_number': confirm_number,
+    'item_name': item_name,
+    'item_count': item_count,
+    'total_price': total_price,
     }
