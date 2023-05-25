@@ -12,6 +12,9 @@ class Challenge(models.Model):
     created_at = models.DateTimeField("생성 시간", auto_now_add=True)
     updated_at = models.DateTimeField("수정 시간", auto_now=True)
     main_image = models.ImageField(upload_to='challenge', default='media/no_image.jpg')
+    
+    def __str__(self):
+        return self.challenge_title
 
 # 소비경향 model
 class ConsumeStyle(models.Model):
