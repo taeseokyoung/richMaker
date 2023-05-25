@@ -25,6 +25,8 @@ urlpatterns = [
     path('challenge/<int:challenge_id>/', views.ChallengeDetailView.as_view(), name='challenge_detail_view'),
      # 상세 API
     path('challenge/list', views.ChallengeListView.as_view(), name='challenge_list_view'),
+    # AI 영수증 체크
+    path('post/ai/', views.AiCheckView.as_view(), name='ai_check_view'),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
