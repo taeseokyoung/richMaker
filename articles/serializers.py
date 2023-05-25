@@ -24,7 +24,7 @@ class ChallengeWriteSerializer(serializers.ModelSerializer):
 class ChallengeUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Challenge
-        fields = ('challenge_title', 'id', )
+        fields = ('challenge_title', 'id', 'user')
 
 
 # 현재는 write와 동일하나 수정 시 제외되는 부분이 있었으면 합니다. (챌린지니까)
@@ -104,7 +104,13 @@ class AccountminusShortSerializer(serializers.ModelSerializer):
         
 # 저축액 작성, 수정하기
 class AccountplusSerializer(serializers.ModelSerializer):
+    challenge_title = serializers.SerializerMethodField()
     
     class Meta:
         model=Accountplus
         exclude = ('user',)
+        
+    def get_challenge_title(self, obj):
+        return obj.challenge.challenge_title
+        
+    

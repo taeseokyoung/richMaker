@@ -257,21 +257,33 @@ class AccountShortView(APIView):
 # 저축 views
 class AccountPlusView(APIView):
     permission_classes = [IsAuthenticated]
-    
+        
     def post(self, request):
-        serializer = AccountplusSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user = request.user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+            serializer = AccountplusSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(user = request.user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
     # 날짜별 저축액 모아보기
     def get(self, request, date):
         plus = Accountplus.objects.filter(date=date, user=request.user)
         
         serializer = AccountplusSerializer(plus, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+            
+    
+class AccountPlusDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+     
+    # 챌린지별 저축액 모아보기
+    def get(self, request, plus_id):
+        plus = Accountplus.objects.filter(challenge_id=plus_id, user=request.user)
+        
+        serializer = AccountplusSerializer(plus, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
     
     def put(self, request, plus_id):
         plus = get_object_or_404(Accountplus, id=plus_id)
