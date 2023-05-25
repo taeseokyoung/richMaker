@@ -19,6 +19,8 @@ from datetime import datetime
 from django.utils import timezone
 from articles.pagination import ChallengePagination
 from users.models import User
+from ai.main import AiCheck
+import json
 
 # Create your views here.
 
@@ -119,8 +121,6 @@ class ChallengeListView(APIView):
             top_challenge_of_month = Challenge.objects.filter(created_at__range=(current_time - timezone.timedelta(days=30),current_time))[:5]
             top_challenge_count = top_challenge_of_month.count()
             top_challenge_serializer = ChallengeListSerializer(top_challenge_of_month, many=True)
-            
-            
 
             return Response({"new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data},
                              "top_challenge": {"count": top_challenge_count, "list": top_challenge_serializer.data}}, status=status.HTTP_200_OK)
@@ -304,3 +304,10 @@ class ConsumerStyleView(APIView):
         style = ConsumeStyle.objects.all()
         serializer = ConsumerstyleSerializer(style, many=True)
         return Response(serializer.data)
+    
+
+# AI 영수증 체크
+class AiCheckView(APIView):
+    def post(self, request):
+        ai_data = json.dumps(AiCheck(request.data['base64String']))
+        return Response(ai_data, status=status.HTTP_200_OK)
