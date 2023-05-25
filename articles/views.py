@@ -12,22 +12,31 @@ from articles.serializers import (
     ChallengeSerializer, 
     ChallengeMemberSerializer,
     ChallengeListSerializer,
+    ChallengeUserSerializer,
     )
 from articles.models import Income, Accountminus, Accountplus, ConsumeStyle, Challenge
 from datetime import datetime
 from django.utils import timezone
 from articles.pagination import ChallengePagination
+from users.models import User
 
 # Create your views here.
 
 class ChallengeView(APIView):
     def get(self, request):
-        '''
-        챌린지 보기
-        '''
-        challenge = Challenge.objects.all()
-        serializer = ChallengeSerializer(challenge, many=True)
-        return Response(serializer.data)
+        user = get_object_or_404(User, id=request.user.id)
+        bookmark_user = user.bookmark.all()
+        print(bookmark_user)
+        serializer = ChallengeUserSerializer(bookmark_user, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+            
+    # def get(self, request):
+    #     '''
+    #     챌린지 보기
+    #     '''
+    #     challenge = Challenge.objects.all()
+    #     serializer = ChallengeSerializer(challenge, many=True)
+    #     return Response(serializer.data)
 
 
 class ChallengeListView(APIView):
@@ -99,7 +108,7 @@ class ChallengeWriteView(APIView):
         '''
         챌린지 쓰기
         '''
-        serializer = ChallengeSerializer(data=request.data) 
+        serializer = ChallengeSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -125,6 +134,7 @@ class ChallengeDatailView(APIView):
             return Response("챌린지 수정 권한은 챌린지를 만든 사람에게 있습니다.", status=status.HTTP_403_FORBIDDEN)
 
 class ChallengeMemberView(APIView):
+    
     def delete(self, request, challenge_id):
         '''
         챌린지 삭제하기 : 챌린지를 시작한 사람이 없을 때만
