@@ -7,16 +7,34 @@ from .serializer import ComtomTokenObtainPairSerializer,UserSerializer,ReadUserS
 from .models import User
 from . import validated
 from articles.models import Challenge,Comment
+from django.contrib.auth.hashers import check_password
 
 
 class UserView(APIView):
+    # 테스트용 API
+    def get(self,request,user_id):
+        owner = get_object_or_404(User, id=user_id)
+        serializer = UserSerializer(owner)
+        return  Response(serializer.data,status=status.HTTP_200_OK)
+
     # 회원 정보 수정
     def put(self, request, user_id):
-        if True != validated.validated_password(request.data['password']):
-            return Response({"error": "비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
-        elif True != validated.validated_username(request.data['username']):
-            return Response({"error": "유저네임이 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
         owner = get_object_or_404(User, id=user_id)
+
+        # 인증을 위해, 데이터베이스에 저장된 비밀번호와, 사용자가 입력한 비밀번호가 일치하지 않을 경우
+        if not check_password(request.data['auth_code'] ,owner.password):
+            return Response({"message": "비밀번호가 일치하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+        # 변경하고자 하는 비밀번호가,  기존의 비밀번호와 일치할 경우
+        elif check_password(request.data['password'],owner.password):
+            return Response({"message": "기존의 비밀번호로 변경할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if True != validated.validated_password(request.data['password']):
+            return Response({"message": "비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 회원 정보 수정에서 유저네임도 변경하는 기능을 추가한다면 사용할 코드
+        # elif True != validated.validated_username(request.data['username']):
+        #     return Response({"message": "유저네임이 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
         if request.user == owner:
             serializer = UserSerializer(owner,data=request.data,partial=True) # partial=True : 부분 업데이트
             if serializer.is_valid():
@@ -26,7 +44,7 @@ class UserView(APIView):
             else:
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"error": "권한이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "권한이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
     # 휴면 계정으로 전환
     def delete(self,request,user_id):
@@ -39,20 +57,21 @@ class UserView(APIView):
             return Response({"message":"권한이 없습니다."},status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserAPIView(APIView):
+class GetAuthTokenAPIView(APIView):
     # 이메일 발급 요청(비밀번호 찾기에 사용)
-    def get(self,request):
-        owner = get_object_or_404(User,email = request.data['email'])
+    def post(self, request):
+        owner = get_object_or_404(User, email=request.data['email'])
         owner.auth_code = validated.send_email(owner.email)
         owner.save()
         return Response({"message": "인증 메일을 발송 했습니다."}, status=status.HTTP_200_OK)
+
+class UserAPIView(APIView):
 
     # 회원 가입
     def post(self,request):
         validated_result = validated.validated_data(request.data['email'],request.data['password'],request.data['username'])
         if validated_result != True:
-            return Response({'message': validated_result}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({'message': validated_result}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -78,12 +97,16 @@ class UserAPIView(APIView):
         # 인증 메일 요청
         return Response({"message":"인증 되었습니다."},status=status.HTTP_200_OK)
 
-    # 비밀번호 재 설정
+    # 비밀번호 재 설정(비밀번호 찾기 기능)
     def patch(self,request):
-        if True != validated.validated_password(request.data['password']):
-            return Response({"error": "비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
+        # 재 설정 하고자하는 비밀번호가 기존 비밀번호와 일치할 경우
         owner = get_object_or_404(User,email = request.data['email'])
+        if check_password(request.data['password'], owner.password):
+            return Response({"message": "기존의 비밀번호로 변경할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 비밀번호가 올바른지 검증
+        if True != validated.validated_password(request.data['password']):
+            return Response({"message": "비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         if owner.auth_code == '':
             return Response({"message":"먼저 인증코드를 발급받아주세요."},status=status.HTTP_400_BAD_REQUEST)
@@ -110,7 +133,7 @@ class UserLikes(APIView):
     # 댓글에 좋아요 누른 사람들의 정보 불러오기
     def get(self, request, comment_id):
         try:
-            comment = get_object_or_404(Challenge, id=comment_id)
+            comment = get_object_or_404(Comment, id=comment_id)
         except AttributeError:
             return Response({"message": "게시글을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         serializer = GetCommentLikeUserInfo(comment)
@@ -118,7 +141,6 @@ class UserLikes(APIView):
 
     # 사용자가 댓글을 좋아요, 좋아요 취소
     def post(self, request,comment_id):
-        print("test")
         try :
             user = get_object_or_404(User,email = request.user.email)
         except AttributeError:
