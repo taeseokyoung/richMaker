@@ -68,24 +68,3 @@ def AiCheck(base64_string):
         'items': items,
         'total_price': total_price
     }
-    
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    print(storeInfo)
-    hopeful_data_list = ['storeInfo', ]
-    meaningful_data = {}
-    need_visit = []
-    # need_visit.append()
-    while need_visit:
-        pass
-
-
-    
