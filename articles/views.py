@@ -23,20 +23,61 @@ from users.models import User
 # Create your views here.
 
 class ChallengeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
     def get(self, request):
+        '''
+        각 유저별 북마크한 챌린지 api
+        '''
         user = get_object_or_404(User, id=request.user.id)
         bookmark_user = user.bookmark.all()
         print(bookmark_user)
         serializer = ChallengeUserSerializer(bookmark_user, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-            
-    # def get(self, request):
-    #     '''
-    #     챌린지 보기
-    #     '''
-    #     challenge = Challenge.objects.all()
-    #     serializer = ChallengeSerializer(challenge, many=True)
-    #     return Response(serializer.data)
+    
+    def post(self,request):
+        '''
+        챌린지 쓰기
+        '''
+        serializer = ChallengeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response (serializer.errors)
+
+class ChallengeDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    def put(self, request, challenge_id):
+        '''
+        챌린지 수정하기
+        '''
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        if request.user.id == challenge.user_id:
+            serializer = ChallengeSerializer(challenge, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response("챌린지 수정 권한은 챌린지를 만든 사람에게 있습니다.", status=status.HTTP_403_FORBIDDEN)
+    
+    def delete(self, request, challenge_id):
+        '''
+        챌린지 삭제하기 : 챌린지를 시작한 사람이 없을 때만
+        '''
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        serializer = ChallengeMemberSerializer(challenge)
+        challengeMember = serializer.data.get('bookmarking_people_count')
+        if challengeMember == 0:
+            if request.user.id == challenge.user_id:
+                challenge.delete()
+                return Response("챌린지가 삭제되었습니다.", status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response("챌린지 삭제 권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response("챌린지를 삭제할 수 없습니다.", status=status.HTTP_403_FORBIDDEN)
 
 
 class ChallengeListView(APIView):
@@ -101,55 +142,6 @@ class ChallengeListView(APIView):
             else:
                 serializer = self.serializer_class(new_challenge, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-
-class ChallengeWriteView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    def post(self,request):
-        '''
-        챌린지 쓰기
-        '''
-        serializer = ChallengeSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response (serializer.errors)
-
-        
-class ChallengeDatailView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    def put(self, request, challenge_id):
-        '''
-        챌린지 수정하기
-        '''
-        challenge = get_object_or_404(Challenge, id=challenge_id)
-        if request.user.id == challenge.user_id:
-            serializer = ChallengeSerializer(challenge, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response("챌린지 수정 권한은 챌린지를 만든 사람에게 있습니다.", status=status.HTTP_403_FORBIDDEN)
-
-class ChallengeMemberView(APIView):
-    
-    def delete(self, request, challenge_id):
-        '''
-        챌린지 삭제하기 : 챌린지를 시작한 사람이 없을 때만
-        '''
-        challenge = get_object_or_404(Challenge, id=challenge_id)
-        serializer = ChallengeMemberSerializer(challenge)
-        challengeMember = serializer.data.get('bookmarking_people_count')
-        if challengeMember == 0:
-            if request.user.id == challenge.user_id:
-                challenge.delete()
-                return Response("챌린지가 삭제되었습니다.", status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response("챌린지 삭제 권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
-        else:
-            return Response("챌린지를 삭제할 수 없습니다.", status=status.HTTP_403_FORBIDDEN)
 
 # 수입 views
 class IncomeView(APIView):

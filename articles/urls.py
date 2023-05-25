@@ -22,9 +22,7 @@ urlpatterns = [
     path('post/plus/<int:plus_id>/', views.AccountPlusView.as_view(), name="plus_update"),
     # 챌린지 url
     path('challenge/', views.ChallengeView.as_view(), name='challenge_view'),
-    path('challenge/post/', views.ChallengeWriteView.as_view(), name='challenge_post_view'),
-    path('challenge/post/<int:challenge_id>/', views.ChallengeDatailView.as_view(), name='challenge_detail_view'),
-    path('challenge/delete/<int:challenge_id>/', views.ChallengeMemberView.as_view(), name='challenge_member_view'),
+    path('challenge/<int:challenge_id>/', views.ChallengeDetailView.as_view(), name='challenge_detail_view'),
      # 상세 API
     path('challenge/list', views.ChallengeListView.as_view(), name='challenge_list_view'),
 ]
