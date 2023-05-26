@@ -227,7 +227,7 @@ SIMPLE_JWT = {
 SIMPLE_JWT = {
     # 개발환경에 맞춘 access_token 유효시간을 넉넉히 잡았습니다.
     # 배포때 조정이 필요합니다.
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=240),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
