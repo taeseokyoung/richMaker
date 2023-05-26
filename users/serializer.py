@@ -4,16 +4,9 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class ProfileUserSerializer(serializers.ModelSerializer):
-    bookmark_count = serializers.SerializerMethodField()
-    def get_bookmark_count(self,obj):
-        return obj.bookmark.count()
-
-# 관심 있는 챌린지 (좀더 생각해보기)
-# 북마크: 참여하고 있는 챌린지
-
     class Meta:
         model = User
-        fields = ('email','username','bio','profile_image','bookmark','money')
+        fields = ('email','username','bio','profile_image','money','challenge_bookmark','challenge_like')
         extra_kwargs = {
             "email" : {"read_only": True},
         }
@@ -24,7 +17,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = "__all__"
         extra_kwargs = {
             "password": {"write_only": True},
-            # 이메일 인증 기능
         }
     def create(self, validated_data):
         user = super().create(validated_data)

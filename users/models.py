@@ -34,8 +34,8 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser):
     email = models.EmailField("이메일 주소", max_length=100, unique=True)
     username = models.CharField("사용자이름", max_length=20)
-    password = models.CharField("비밀번호", max_length=128)  # max?
-    bio = models.TextField(default="아직 소개글이 없습니다.")
+    password = models.CharField("비밀번호", max_length=128)
+    bio = models.TextField(default="아직 소개글이 없습니다.",max_length=200)
     profile_image = models.ImageField(upload_to="%Y/%m", blank=True) # 디렉토리 관리를 년/월기준으로 나눈다.
     auth_code = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField("가입일", auto_now_add=True)
@@ -44,15 +44,10 @@ class User(AbstractBaseUser):
     is_admin = models.BooleanField(default=False) # 관리자 권한
     is_active = models.BooleanField(default=False) # 계정 활성화
 
-    # 챌린지 멤버
-    bookmark = models.ManyToManyField(Challenge, symmetrical=False, related_name='bookmarking_people', blank=True)
-    # 댓글 좋아요
-    # likes = models.ManyToManyField(Comment, symmetrical=False, 
-    # related_name='liking_people', blank=True)
-
-
-
-
+    # 챌린지 북마크(첼린지 맴버)
+    challenge_bookmark = models.ManyToManyField(Challenge, symmetrical=False, related_name='bookmarking_people', blank=True)
+    # 첼린지 좋아요(첼린지 관심 등록)
+    challenge_like = models.ManyToManyField(Challenge, symmetrical=False,related_name='liking_people', blank=True)
 
     # 로그인에 필요한 필드 지정
     USERNAME_FIELD = 'email'
@@ -62,7 +57,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     def __str__(self):
-        return self.email
+        return self.username
 
 
     def has_perm(self, perm, obj=None):
