@@ -48,7 +48,7 @@ class Accountplus(models.Model):
 class Accountminus(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     date = models.DateField("Date",default=date.today)
-    consumer_style = models.ManyToManyField("ConsumeStyle", verbose_name="소비경향", blank=False)
+    consumer_style = models.ForeignKey(ConsumeStyle, on_delete=models.CASCADE)
     
     amount = models.PositiveIntegerField(default=1, verbose_name="수량", blank=False)
     minus_money = models.PositiveIntegerField(verbose_name="지출금액단가", null=False, blank=False)
