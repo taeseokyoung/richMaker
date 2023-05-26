@@ -6,10 +6,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializer import ComtomTokenObtainPairSerializer,UserSerializer,ProfileUserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo
 from .models import User
 from . import validated
-from articles.models import Challenge,Comment
+from articles.models import Challenge
 from django.contrib.auth.hashers import check_password
-
-
 
 
 class UserView(APIView):
@@ -162,7 +160,7 @@ class UserLikes(APIView):
     # 댓글에 좋아요 누른 사람들의 정보 불러오기
     def get(self, request, comment_id):
         try:
-            comment = get_object_or_404(Comment, id=comment_id)
+            comment = get_object_or_404(Challenge, id=comment_id)
         except AttributeError:
             return Response({"message": "게시글을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         serializer = GetCommentLikeUserInfo(comment)
@@ -175,16 +173,16 @@ class UserLikes(APIView):
         except AttributeError:
             return Response({"message": "로그인이 필요합니다."}, status=status.HTTP_401_UNAUTHORIZED)
         try:
-            comment = get_object_or_404(Comment,id=comment_id)
+            comment = get_object_or_404(Challenge,id=comment_id)
         except AttributeError:
             return Response({"message": "댓글이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
         # 해당 댓글 정보가 유저의 many to many 필드 데이터에 있다면 좋아요 취소
-        if comment in user.comment_like.all():
-            user.comment_like.remove(comment)
-            return Response({"message":"like cancel"}, status=status.HTTP_204_NO_CONTENT)
+        if comment in user.challenge_like.all():
+            user.challenge_like.remove(comment)
+            return Response({"message":"좋아요 목록에 제거했습니다."}, status=status.HTTP_204_NO_CONTENT)
         else:
-            user.comment_like.add(comment)
-            return Response({"message": "add cancel"}, status=status.HTTP_201_CREATED)
+            user.challenge_like.add(comment)
+            return Response({"message": "좋아요 목록에 추가하였습니다."}, status=status.HTTP_201_CREATED)
 
 
 
@@ -203,12 +201,12 @@ class UserBookMark(APIView):
             return Response({"message": "로그인이 필요합니다."}, status=status.HTTP_401_UNAUTHORIZED)
         challenge = get_object_or_404(Challenge,id=challenge_id)
 
-        if challenge in user.bookmark.all():
-            user.bookmark.remove(challenge)
-            return Response({"message":"bookmark cancel"}, status=status.HTTP_204_NO_CONTENT)
+        if challenge in user.challenge_bookmark.all():
+            user.challenge_bookmark.remove(challenge)
+            return Response({"message":"북마크 취소했습니다."}, status=status.HTTP_204_NO_CONTENT)
         else:
-            user.bookmark.add(challenge)
-            return Response({"message": "add bookmark"}, status=status.HTTP_201_CREATED)
+            user.challenge_bookmark.add(challenge)
+            return Response({"message": "북마크 등록 했습니다."}, status=status.HTTP_201_CREATED)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):

@@ -44,14 +44,10 @@ class User(AbstractBaseUser):
     is_admin = models.BooleanField(default=False) # 관리자 권한
     is_active = models.BooleanField(default=False) # 계정 활성화
 
-    # 챌린지 멤버
-    bookmark = models.ManyToManyField(Challenge, symmetrical=False, related_name='bookmarking_people', blank=True)
-    # 댓글 좋아요
-    comment_like = models.ManyToManyField(Comment, symmetrical=False,related_name='liking_people', blank=True)
-
-
-
-
+    # 챌린지 북마크(첼린지 맴버)
+    challenge_bookmark = models.ManyToManyField(Challenge, symmetrical=False, related_name='bookmarking_people', blank=True)
+    # 첼린지 좋아요(첼린지 관심 등록)
+    challenge_like = models.ManyToManyField(Challenge, symmetrical=False,related_name='liking_people', blank=True)
 
     # 로그인에 필요한 필드 지정
     USERNAME_FIELD = 'email'
@@ -61,7 +57,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     def __str__(self):
-        return self.email
+        return self.username
 
 
     def has_perm(self, perm, obj=None):
