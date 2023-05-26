@@ -19,6 +19,7 @@ from django.utils import timezone
 from articles.pagination import ChallengePagination
 from users.models import User
 from ai.main import AiCheck
+from ai.analytics import individual_analysis, people_analysis
 import json
 from django.db.models import Sum
 
@@ -120,11 +121,49 @@ class ChallengeListView(APIView):
             top_challenge = Challenge.objects.annotate(total_sum=Sum('bookmarking_people')).order_by('-total_sum')
             top_challenge_serializer = ChallengeListSerializer(top_challenge[:5], many=True)
             
-            # 소비성향 분석
-            # print(Income.objects.filter(user_id=request.user.id))
+            ########## 소비성향 분석
             
-
-            return Response({"new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data}, "top_challenge": {"list": top_challenge_serializer.data}}, status=status.HTTP_200_OK)
+            # 소비성향 가져오기
+            if request.user:
+                # 개인 소비 성향
+                individual_df = 0
+                all_individual_consume = Accountminus.objects.filter(user_id=request.user.id).filter(date__month=timezone.now().date().month).values('user','date','amount','minus_money','placename','placewhere','consumer_style__style')
+                if all_individual_consume.count() == 0:
+                    pass
+                else:
+                    individual_data = list(all_individual_consume)
+                    analized_individual_data = individual_analysis(individual_data)
+                    individual_df = json.dumps(analized_individual_data, ensure_ascii=False)
+                    
+                # 일반 소비 성향
+                all_consume_style = ConsumeStyle.objects.all()
+                people_consume_style = Accountminus.objects.filter(date__month=timezone.now().date().month).values('user','date','amount','minus_money','placename','placewhere','consumer_style__style')
+                people_consume_style_list = list(people_consume_style)
+                analized_people_data = people_analysis(people_consume_style_list)
+                people_df = json.dumps(analized_people_data, ensure_ascii=False)
+                
+                if individual_df != 0:
+                    cache = []
+                    for food in analized_people_data['consumer_style__style']:
+                        if food in analized_individual_data['consumer_style__style']:
+                            cache.append(analized_individual_data['ratio'][analized_individual_data['consumer_style__style'].index(food)])
+                        else:
+                            cache.append(0)
+                
+                    analized_individual_data['ratio'] = cache
+                    individual_df = json.dumps(analized_individual_data, ensure_ascii=False)
+                
+                
+                
+                
+            return Response(
+                {
+                    "new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data},
+                    "top_challenge": {"list": top_challenge_serializer.data},
+                    "individual": individual_df,
+                    "people": people_df
+                },
+                status=status.HTTP_200_OK)
 
         elif request.GET.get('query') == 'top':
             # 일단 높은 순. 추후 수정 필요
@@ -160,7 +199,6 @@ class IncomeView(APIView):
     # 날짜별 수입보기
     def get(self, request, date):
         income = Income.objects.filter(user_id=request.user.id, date=date)
-        # print(request.user.id)
         serializer = IncomeSerializer(income, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
