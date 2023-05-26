@@ -3,6 +3,11 @@ from articles.models import Accountminus, Accountplus, Income, ConsumeStyle, Cha
 from users.models import User
 
 
+class GetChallengeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Challenge
+        fields = ('challenge_title','challenge_content','amount','main_image')
+
 # 챌린지
 class ChallengeSerializer(serializers.ModelSerializer):
     class Meta:

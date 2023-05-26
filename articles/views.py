@@ -13,6 +13,7 @@ from articles.serializers import (
     ChallengeMemberSerializer,
     ChallengeListSerializer,
     ChallengeUserSerializer,
+    GetChallengeSerializer,
     )
 from articles.models import Income, Accountminus, Accountplus, ConsumeStyle, Challenge
 from datetime import datetime
@@ -324,3 +325,13 @@ class AiCheckView(APIView):
     def post(self, request):
         ai_data = json.dumps(AiCheck(request.data['base64String']))
         return Response(ai_data, status=status.HTTP_200_OK)
+
+
+
+# 챌린지 게시글 읽어오기
+class GetChallengeData(APIView):
+    def get(self,request,challenge_id):
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        serializer = GetChallengeSerializer(challenge)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
