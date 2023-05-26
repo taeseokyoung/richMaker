@@ -14,12 +14,12 @@ from articles.serializers import (
     ChallengeUserSerializer,
     )
 from articles.models import Income, Accountminus, Accountplus, ConsumeStyle, Challenge
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 from articles.pagination import ChallengePagination
 from users.models import User
 from ai.main import AiCheck
-from ai.analytics import individual_analysis, people_analysis
+from ai.analytics import individual_analysis, people_analysis, report
 import json
 from django.db.models import Sum
 
@@ -152,18 +152,44 @@ class ChallengeListView(APIView):
                 
                     analized_individual_data['ratio'] = cache
                     individual_df = json.dumps(analized_individual_data, ensure_ascii=False)
-                
-                
-                
-                
+            
+            ######## 적정 소비 금액 판단하기
+            total_income = Income.objects.filter(user_id=request.user.id).filter(date__month=timezone.now().date().month).aggregate(total=Sum('income_money'))
+            ideal_expanse = 0
+            if total_income['total'] == None:
+                pass
+            else:
+                ideal_expanse = int(total_income['total'] * 0.7)
+            
+            ######## 리포트
+            current_date = datetime.now().date()
+            one_week_ago = current_date - timedelta(days=7)
+            one_week_ago_monday = one_week_ago - timedelta(days=one_week_ago.weekday())
+            current_date_monday = current_date - timedelta(days=current_date.weekday())
+            report_query = Accountminus.objects.filter(user_id=request.user.id).filter(date__gte=one_week_ago_monday, date__lt=current_date_monday).values('user','date','amount','minus_money','placename','placewhere','consumer_style__style')
+            
+            report_json = 0
+            if report_query.count() == 0:
+                pass
+            else:
+                report_query_list = list(report_query)
+                report_data = report(report_query_list)
+                report_json = json.dumps(report_data, ensure_ascii=False)
+            
+            print(report_json)
             return Response(
                 {
                     "new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data},
                     "top_challenge": {"list": top_challenge_serializer.data},
                     "individual": individual_df,
-                    "people": people_df
+                    "people": people_df,
+                    "ideal_expanse": ideal_expanse,
+                    "report": report_json
                 },
                 status=status.HTTP_200_OK)
+            
+            ####### 목표금액 산출하기
+            
 
         elif request.GET.get('query') == 'top':
             # 일단 높은 순. 추후 수정 필요
