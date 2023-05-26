@@ -12,10 +12,11 @@ from django.contrib.auth.hashers import check_password
 
 
 
-
 class UserView(APIView):
     def get(self,request,user_id):
         owner = get_object_or_404(User, id=user_id)
+
+
         serializer = ProfileUserSerializer(owner)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
@@ -28,7 +29,6 @@ class UserView(APIView):
         # 변경하고자 하는 비밀번호가,  기존의 비밀번호와 일치할 경우
         elif check_password(request.data['password'],owner.password):
             return Response({"message": "기존의 비밀번호로 변경할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
         if True != validated.validated_password(request.data['password']):
             return Response({"message": "비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
