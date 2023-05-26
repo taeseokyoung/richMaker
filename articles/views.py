@@ -33,7 +33,7 @@ class ChallengeView(APIView):
         각 유저별 북마크한 챌린지 api
         '''
         user = get_object_or_404(User, id=request.user.id)
-        bookmark_user = user.bookmark.all()
+        bookmark_user = user.challenge_bookmark.all()
         serializer = ChallengeUserSerializer(bookmark_user, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
