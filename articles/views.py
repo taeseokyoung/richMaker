@@ -7,6 +7,7 @@ from articles.serializers import (
     IncomeSerializer,
     AccountminusSerializer,
     AccountplusSerializer,
+    AccountminusDetailSerializer,
     ConsumerstyleSerializer,
     ChallengeSerializer, 
     ChallengeMemberSerializer,
@@ -210,7 +211,7 @@ class AccountMinusView(APIView):
         if minus.user != request.user:
             return Response({"error":"작성자만이 확인할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
 
-        serializer = AccountminusSerializer(minus)
+        serializer = AccountminusDetailSerializer(minus)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     
@@ -251,7 +252,7 @@ class AccountShortView(APIView):
             
         minus = Accountminus.objects.filter(date=parsed_date, user_id=request.user.id)
         
-        serializer = AccountminusSerializer(minus, many=True)
+        serializer = AccountminusDetailSerializer(minus, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
