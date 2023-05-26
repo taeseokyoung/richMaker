@@ -35,7 +35,6 @@ def AiCheck(base64_string):
         "POST", api_url, headers=headers, data=payload, timeout=10)
     response_dict = json.loads(response.text)
     response_dict = response_dict['images'][0]
-    print(response_dict)
     
     store_name = response_dict.get('receipt', {}).get('result', {}).get('storeInfo', {}).get('name', {}).get('formatted', '')
     biz_num = response_dict.get('receipt', {}).get('result', {}).get('storeInfo', {}).get('bizNum', {}).get('formatted', '')

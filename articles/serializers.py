@@ -43,6 +43,7 @@ class ChallengeListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Challenge
         fields = [
+            'id',
             'user',
             'challenge_title',
             'challenge_content',
@@ -85,7 +86,16 @@ class AccountminusSerializer(serializers.ModelSerializer):
     
     class Meta:
         model=Accountminus
-        exclude = ('user',)
+        fields = [
+                'date',
+                'consumer_style',
+                'amount',
+                'minus_money',
+                'placename',
+                'placewhere',
+                'totalminus',
+                'stylename',
+                ]
         
     def get_totalminus(self, obj):
         return obj.minus_money*obj.amount

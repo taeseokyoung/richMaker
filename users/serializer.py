@@ -3,12 +3,13 @@ from users.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
-
-class ReadUserSerializer(serializers.ModelSerializer):
+class ProfileUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('email','username')
-
+        fields = ('email','username','bio','profile_image','money','challenge_bookmark','challenge_like')
+        extra_kwargs = {
+            "email" : {"read_only": True},
+        }
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,7 +17,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = "__all__"
         extra_kwargs = {
             "password": {"write_only": True},
-            # 이메일 인증 기능
         }
     def create(self, validated_data):
         user = super().create(validated_data)
