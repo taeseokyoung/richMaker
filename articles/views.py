@@ -34,7 +34,6 @@ class ChallengeView(APIView):
         '''
         user = get_object_or_404(User, id=request.user.id)
         bookmark_user = user.bookmark.all()
-        print(bookmark_user)
         serializer = ChallengeUserSerializer(bookmark_user, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -121,6 +120,10 @@ class ChallengeListView(APIView):
             # 북마크 상위 챌린지
             top_challenge = Challenge.objects.annotate(total_sum=Sum('bookmarking_people')).order_by('-total_sum')
             top_challenge_serializer = ChallengeListSerializer(top_challenge[:5], many=True)
+            
+            # 소비성향 분석
+            print(Income.objects.filter(user_id=request.user.id))
+            
 
             return Response({"new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data}, "top_challenge": {"list": top_challenge_serializer.data}}, status=status.HTTP_200_OK)
 
@@ -193,7 +196,6 @@ class AccountMinusView(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
-        print(request.data)
         serializer = AccountminusSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user = request.user)
