@@ -201,11 +201,11 @@ class UserBookMark(APIView):
             return Response({"message": "로그인이 필요합니다."}, status=status.HTTP_401_UNAUTHORIZED)
         challenge = get_object_or_404(Challenge,id=challenge_id)
 
-        if challenge in user.challenge_bookmark.all():
-            user.challenge_bookmark.remove(challenge)
+        if challenge in user.bookmark.all():
+            user.bookmark.remove(challenge)
             return Response({"message":"북마크 취소했습니다."}, status=status.HTTP_204_NO_CONTENT)
         else:
-            user.challenge_bookmark.add(challenge)
+            user.bookmark.add(challenge)
             return Response({"message": "북마크 등록 했습니다."}, status=status.HTTP_201_CREATED)
 
 
