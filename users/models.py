@@ -34,8 +34,8 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser):
     email = models.EmailField("이메일 주소", max_length=100, unique=True)
     username = models.CharField("사용자이름", max_length=20)
-    password = models.CharField("비밀번호", max_length=128)  # max?
-    bio = models.TextField(default="아직 소개글이 없습니다.")
+    password = models.CharField("비밀번호", max_length=128)
+    bio = models.TextField(default="아직 소개글이 없습니다.",max_length=200)
     profile_image = models.ImageField(upload_to="%Y/%m", blank=True) # 디렉토리 관리를 년/월기준으로 나눈다.
     auth_code = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField("가입일", auto_now_add=True)
@@ -47,8 +47,7 @@ class User(AbstractBaseUser):
     # 챌린지 멤버
     bookmark = models.ManyToManyField(Challenge, symmetrical=False, related_name='bookmarking_people', blank=True)
     # 댓글 좋아요
-    # likes = models.ManyToManyField(Comment, symmetrical=False, 
-    # related_name='liking_people', blank=True)
+    comment_like = models.ManyToManyField(Comment, symmetrical=False,related_name='liking_people', blank=True)
 
 
 

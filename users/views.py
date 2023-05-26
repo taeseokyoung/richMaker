@@ -3,24 +3,25 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializer import ComtomTokenObtainPairSerializer,UserSerializer,ReadUserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo
+from .serializer import ComtomTokenObtainPairSerializer,UserSerializer,ProfileUserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo
 from .models import User
 from . import validated
 from articles.models import Challenge,Comment
 from django.contrib.auth.hashers import check_password
 
 
+
+
+
 class UserView(APIView):
-    # 테스트용 API
     def get(self,request,user_id):
         owner = get_object_or_404(User, id=user_id)
-        serializer = UserSerializer(owner)
-        return  Response(serializer.data,status=status.HTTP_200_OK)
+        serializer = ProfileUserSerializer(owner)
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
     # 회원 정보 수정
     def put(self, request, user_id):
         owner = get_object_or_404(User, id=user_id)
-
         # 인증을 위해, 데이터베이스에 저장된 비밀번호와, 사용자가 입력한 비밀번호가 일치하지 않을 경우
         if not check_password(request.data['auth_code'] ,owner.password):
             return Response({"message": "비밀번호가 일치하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -39,22 +40,39 @@ class UserView(APIView):
             serializer = UserSerializer(owner,data=request.data,partial=True) # partial=True : 부분 업데이트
             if serializer.is_valid():
                 serializer.save()
-                update_user_info = ReadUserSerializer(owner)
-                return Response(update_user_info.data,status=status.HTTP_200_OK)
+                return Response({"message": "회원 정보를 수정 했습니다."},status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"message": "권한이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
+    def patch(self,request,user_id):
+        owner = get_object_or_404(User, id=user_id)
+        if request.user.pk != owner.pk:
+            return Response({"message": "권한이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not validated.validated_username(request.data['username']):
+            return Response({"message": "닉네임을 올바르게 작성해 주세요."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ProfileUserSerializer(owner,data=request.data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "프로필을 수정 했습니다."}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
     # 휴면 계정으로 전환
     def delete(self,request,user_id):
         owner = get_object_or_404(User,id=user_id)
+        if not check_password(request.data['password'],owner.password):
+            return Response({"message": "비밀번호가 일치하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
         if request.user == owner:
             owner.is_active = False
             owner.save()
             return Response({"message": "휴면 계정으로 전환 되었습니다."}, status=status.HTTP_200_OK)
         else:
-            return Response({"message":"권한이 없습니다."},status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message":"로그인 유효시간이 지났거나,권한이 없습니다."},status=status.HTTP_401_UNAUTHORIZED)
 
 
 class GetAuthTokenAPIView(APIView):
@@ -120,9 +138,9 @@ class UserAPIView(APIView):
             owner.is_active = True
             owner.save()
 
-            update_user_info = ReadUserSerializer(owner)
+
             # 자신의 비밀 번호를 찾지 못할 때 비밀 번호 재 설정
-            return Response(update_user_info.data, status=status.HTTP_200_OK)
+            return Response({"message":"비밀번호를 재 설정 했습니다."}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
