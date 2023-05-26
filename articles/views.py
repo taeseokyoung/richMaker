@@ -200,15 +200,15 @@ class AccountMinusView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         
-    # # 지출내역 자세히보기
-    # def get(self, request, minus_id):
-    #     minus = get_object_or_404(Accountminus, id=minus_id)
+    # 지출내역 자세히보기
+    def get(self, request, minus_id):
+        minus = get_object_or_404(Accountminus, id=minus_id)
         
-    #     if minus.user != request.user:
-    #         return Response({"error":"작성자만이 확인할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
+        if minus.user != request.user:
+            return Response({"error":"작성자만이 확인할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
 
-    #     serializer = AccountminusSerializer(minus)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = AccountminusSerializer(minus)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     
     def put(self, request, minus_id):
