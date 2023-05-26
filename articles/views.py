@@ -6,7 +6,6 @@ from rest_framework.permissions import IsAuthenticated
 from articles.serializers import (
     IncomeSerializer,
     AccountminusSerializer,
-    AccountminusShortSerializer,
     AccountplusSerializer,
     ConsumerstyleSerializer,
     ChallengeSerializer, 
@@ -164,8 +163,8 @@ class IncomeView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
         
         
-    def put(self, request, income_id):
-        income = get_object_or_404(Income, id=income_id)
+    def put(self, request, date):
+        income = get_object_or_404(Income, date=date)
         
         if income.user != request.user:
             return Response({"error":"작성자만이 수정할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
@@ -179,8 +178,8 @@ class IncomeView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-    def delete(self, request, income_id):
-        income = get_object_or_404(Income, id=income_id)
+    def delete(self, request, date):
+        income = get_object_or_404(Income, date=date)
         
         if income.user != request.user:
             return Response({"error":"작성자만이 삭제할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
@@ -203,15 +202,15 @@ class AccountMinusView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         
-    # 지출내역 자세히보기
-    def get(self, request, minus_id):
-        minus = get_object_or_404(Accountminus, id=minus_id)
+    # # 지출내역 자세히보기
+    # def get(self, request, minus_id):
+    #     minus = get_object_or_404(Accountminus, id=minus_id)
         
-        if minus.user != request.user:
-            return Response({"error":"작성자만이 확인할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
+    #     if minus.user != request.user:
+    #         return Response({"error":"작성자만이 확인할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
 
-        serializer = AccountminusSerializer(minus)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    #     serializer = AccountminusSerializer(minus)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
     
     
     def put(self, request, minus_id):
@@ -239,7 +238,7 @@ class AccountMinusView(APIView):
 
 
 
-# 지출내역 날짜별로 모아서 보기 (이때는.. 요약해서 보기)
+# 지출내역 날짜별로 모아서 보기
 class AccountShortView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -251,7 +250,7 @@ class AccountShortView(APIView):
             
         minus = Accountminus.objects.filter(date=parsed_date, user_id=request.user.id)
         
-        serializer = AccountminusShortSerializer(minus, many=True)
+        serializer = AccountminusSerializer(minus, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
@@ -286,9 +285,9 @@ class AccountPlusDetailView(APIView):
         serializer = AccountplusSerializer(plus, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    
-    def put(self, request, plus_id):
-        plus = get_object_or_404(Accountplus, id=plus_id)
+class AccountUpdateView(APIView):
+    def put(self, request, challenge_id, date):
+        plus = get_object_or_404(Accountplus, challenge_id = challenge_id, date=date)
         
         if plus.user != request.user:
             return Response({"error":"작성자만이 수정할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
@@ -301,8 +300,8 @@ class AccountPlusDetailView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-    def delete(self, request, plus_id):
-        plus = get_object_or_404(Accountplus, id=plus_id)
+    def delete(self, request, challenge_id, date):
+        plus = get_object_or_404(Accountplus, challenge_id=challenge_id, date=date)
         
         if plus.user != request.user:
             return Response({"error":"작성자만이 삭제할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
