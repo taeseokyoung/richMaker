@@ -82,6 +82,7 @@ class IncomeSerializer(serializers.ModelSerializer):
 # 지출액 작성, 자세히 보여주기, 수정하기
 class AccountminusSerializer(serializers.ModelSerializer):
     totalminus = serializers.SerializerMethodField()
+    stylename= serializers.SerializerMethodField()
     
     class Meta:
         model=Accountminus
@@ -90,17 +91,20 @@ class AccountminusSerializer(serializers.ModelSerializer):
     def get_totalminus(self, obj):
         return obj.minus_money*obj.amount
     
+    def get_stylename(self, obj):
+        return obj.consumer_style.style
+    
 
 # 지출액 간단하게 보여주기(지출장소, 총금액)
-class AccountminusShortSerializer(serializers.ModelSerializer):
-    totalminus = serializers.SerializerMethodField()
+# class AccountminusShortSerializer(serializers.ModelSerializer):
+#     totalminus = serializers.SerializerMethodField()
     
-    class Meta:
-        model=Accountminus
-        fields = ['date','placename','totalminus']
+#     class Meta:
+#         model=Accountminus
+#         fields = ['date','placename','totalminus']
     
-    def get_totalminus(self, obj):
-        return obj.minus_money*obj.amount
+#     def get_totalminus(self, obj):
+#         return obj.minus_money*obj.amount
         
         
 # 저축액 작성, 수정하기
