@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from users.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
+from articles.models import Challenge
 
 class ProfileUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,8 +54,23 @@ class GetCommentLikeUserInfo(serializers.ModelSerializer):
         fields = ('liking_people','liking_people_count')
 
 
+class ChallengeDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Challenge
+        exclude = ('created_at', 'updated_at')
 
 
+class GetLikingChallengeSerializer(serializers.ModelSerializer):
+    challenge_like = ChallengeDataSerializer(many=True,read_only=True)
+    class Meta:
+        model = User
+        fields = ('challenge_like',)
+
+class GetBookingChallengeSerializer(serializers.ModelSerializer):
+    bookmark = ChallengeDataSerializer(many=True,read_only=True)
+    class Meta:
+        model = User
+        fields = ('bookmark',)
 
 
 

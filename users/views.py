@@ -3,12 +3,47 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializer import ComtomTokenObtainPairSerializer,UserSerializer,ProfileUserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo
+from .serializer import (ComtomTokenObtainPairSerializer,UserSerializer,ProfileUserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo,GetLikingChallengeSerializer,GetBookingChallengeSerializer)
 from .models import User
 from . import validated
 from articles.models import Challenge
 from django.contrib.auth.hashers import check_password
 
+
+
+# GetLikingChallengeSerializer
+# GetBookingChallengeSerializer
+
+class GetLikingChallenge(APIView):
+    def get(self,request,user_id):
+        owner = get_object_or_404(User,id=user_id)
+        serializer =  GetLikingChallengeSerializer(owner)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+
+class GetBookingChallenge(APIView):
+    def get(self,request,user_id):
+        owner = get_object_or_404(User,id=user_id)
+        serializer =  GetBookingChallengeSerializer(owner)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+
+
+
+
+class UserProfile(APIView):
+    def patch(self, request, user_id):
+        owner = get_object_or_404(User, id=user_id)
+        if request.user != owner:
+            return Response({"message": "권한이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not validated.validated_username(request.data['username']):
+            return Response({"message": "닉네임을 올바르게 작성해 주세요."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ProfileUserSerializer(owner, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "프로필을 수정 했습니다."}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserView(APIView):
     # 프로필 정보 읽어오기
@@ -41,22 +76,6 @@ class UserView(APIView):
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"message": "권한이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-    def patch(self,request,user_id):
-        owner = get_object_or_404(User, id=user_id)
-        if request.user.pk != owner.pk:
-            return Response({"message": "권한이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not validated.validated_username(request.data['username']):
-            return Response({"message": "닉네임을 올바르게 작성해 주세요."}, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = ProfileUserSerializer(owner,data=request.data,partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "프로필을 수정 했습니다."}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     # 휴면 계정으로 전환
     def delete(self,request,user_id):
