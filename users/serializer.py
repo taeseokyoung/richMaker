@@ -4,23 +4,10 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from articles.models import Challenge
 
 
-
-# class ChallengeSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Challenge
-#         fields = "__all__"
-
 class ProfileUserSerializer(serializers.ModelSerializer):
     bookmark_count = serializers.SerializerMethodField()
-    #
-    # my_challenge = serializers.StringRelatedField(many=True)
-    # my_challenge_count = serializers.SerializerMethodField()
-    # my_challenge = ChallengeSerializer(many=True)
-
     def get_bookmark_count(self,obj):
         return obj.bookmark.count()
-    def get_my_challenge_count(self,obj):
-        return obj.my_challenge.count()
 
     class Meta:
         model = User
@@ -28,7 +15,6 @@ class ProfileUserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "email" : {"read_only": True},
         }
-
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

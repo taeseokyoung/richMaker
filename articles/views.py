@@ -21,6 +21,7 @@ from articles.pagination import ChallengePagination
 from users.models import User
 from ai.main import AiCheck
 import json
+from django.db.models import Sum
 
 # Create your views here.
 
@@ -117,17 +118,16 @@ class ChallengeListView(APIView):
             new_challenge_of_month = Challenge.objects.filter(created_at__range=(current_time - timezone.timedelta(days=30),current_time))
             new_challenge_count = new_challenge_of_month.count()
             new_challenge_serializer = ChallengeListSerializer(new_challenge_of_month, many=True)
-            # 상위 챌린지
-            top_challenge_of_month = Challenge.objects.filter(created_at__range=(current_time - timezone.timedelta(days=30),current_time))[:5]
-            top_challenge_count = top_challenge_of_month.count()
-            top_challenge_serializer = ChallengeListSerializer(top_challenge_of_month, many=True)
+            # 북마크 상위 챌린지
+            top_challenge = Challenge.objects.annotate(total_sum=Sum('bookmarking_people')).order_by('-total_sum')
+            top_challenge_serializer = ChallengeListSerializer(top_challenge[:5], many=True)
 
-            return Response({"new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data},
-                             "top_challenge": {"count": top_challenge_count, "list": top_challenge_serializer.data}}, status=status.HTTP_200_OK)
+            return Response({"new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data}, "top_challenge": {"list": top_challenge_serializer.data}}, status=status.HTTP_200_OK)
+
         elif request.GET.get('query') == 'top':
-            # 일단 최신순. 추후 수정 필요
-            new_challenge = Challenge.objects.all().order_by('-created_at')
-            page = self.paginate_queryset(new_challenge)
+            # 일단 높은 순. 추후 수정 필요
+            top_challenge = Challenge.objects.annotate(total_sum=Sum('bookmarking_people')).order_by('-total_sum')
+            page = self.paginate_queryset(top_challenge)
             if page is not None:
                 serializer = self.get_paginated_response(self.serializer_class(page, many=True).data)
             else:
@@ -193,6 +193,7 @@ class AccountMinusView(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
+        print(request.data)
         serializer = AccountminusSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user = request.user)
@@ -257,21 +258,33 @@ class AccountShortView(APIView):
 # 저축 views
 class AccountPlusView(APIView):
     permission_classes = [IsAuthenticated]
-    
+        
     def post(self, request):
-        serializer = AccountplusSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user = request.user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+            serializer = AccountplusSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(user = request.user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
     # 날짜별 저축액 모아보기
     def get(self, request, date):
         plus = Accountplus.objects.filter(date=date, user=request.user)
         
         serializer = AccountplusSerializer(plus, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+            
+    
+class AccountPlusDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+     
+    # 챌린지별 저축액 모아보기
+    def get(self, request, plus_id):
+        plus = Accountplus.objects.filter(challenge_id=plus_id, user=request.user)
+        
+        serializer = AccountplusSerializer(plus, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
     
     def put(self, request, plus_id):
         plus = get_object_or_404(Accountplus, id=plus_id)

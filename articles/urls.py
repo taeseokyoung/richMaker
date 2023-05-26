@@ -20,8 +20,8 @@ urlpatterns = [
     path('post/minus/<str:date>/', views.AccountShortView.as_view(), name="minus_date_view"),
     # 저축 작성
     path('post/plus/', views.AccountPlusView.as_view(), name="plus_view"),
-    # 저축 수정, 삭제
-    path('post/plus/<int:plus_id>/', views.AccountPlusView.as_view(), name="plus_update"),
+    # 저축 수정, 삭제, 챌린지별 저축 보기
+    path('post/plus/<int:plus_id>/', views.AccountPlusDetailView.as_view(), name="plus_update"),
     # 저축액 날짜별로 보기
     path('post/plus/<str:date>/', views.AccountPlusView.as_view(), name="plus_date_view"),
     # 챌린지 url

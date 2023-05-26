@@ -13,13 +13,11 @@ from django.contrib.auth.hashers import check_password
 
 
 class UserView(APIView):
+    # 프로필 정보 읽어오기
     def get(self,request,user_id):
         owner = get_object_or_404(User, id=user_id)
-
-
         serializer = ProfileUserSerializer(owner)
-        return Response(serializer.data,status=status.HTTP_200_OK)
-
+        return  Response(serializer.data ,status=status.HTTP_200_OK)
     # 회원 정보 수정
     def put(self, request, user_id):
         owner = get_object_or_404(User, id=user_id)
@@ -74,6 +72,21 @@ class UserView(APIView):
         else:
             return Response({"message":"로그인 유효시간이 지났거나,권한이 없습니다."},status=status.HTTP_401_UNAUTHORIZED)
 
+    # 프로필 정보 수정
+    def patch(self,request,user_id):
+        if not validated.validated_username(request.data['username']):
+            return Response({"message": "이름이 잘못되었습니다! (1~20자, 공백x)"}, status=status.HTTP_400_BAD_REQUEST)
+        # 400,200,404
+        owner = get_object_or_404(User, id=user_id)
+        if request.user == owner:
+            serializer = ProfileUserSerializer(owner,data=request.data,partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message":"회원 정보를 수정 했습니다."}.data,status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "올바른 입력값이 아닙니다."},status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "권한이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 class GetAuthTokenAPIView(APIView):
     # 이메일 발급 요청(비밀번호 찾기에 사용)
@@ -137,8 +150,6 @@ class UserAPIView(APIView):
             owner.auth_code = ''
             owner.is_active = True
             owner.save()
-
-
             # 자신의 비밀 번호를 찾지 못할 때 비밀 번호 재 설정
             return Response({"message":"비밀번호를 재 설정 했습니다."}, status=status.HTTP_200_OK)
         else:

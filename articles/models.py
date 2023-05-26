@@ -36,7 +36,7 @@ class Income(models.Model):
 class Accountplus(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     date = models.DateField("Date",default=date.today)
-    challenge = models.ManyToManyField("Challenge", verbose_name="챌린지", blank=False)
+    challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE)
     plus_money = models.PositiveIntegerField(verbose_name="저축액", null=False, blank=False)
     
     def __str__(self):
