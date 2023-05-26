@@ -121,7 +121,7 @@ class ChallengeListView(APIView):
             top_challenge_serializer = ChallengeListSerializer(top_challenge[:5], many=True)
             
             # 소비성향 분석
-            print(Income.objects.filter(user_id=request.user.id))
+            # print(Income.objects.filter(user_id=request.user.id))
             
 
             return Response({"new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data}, "top_challenge": {"list": top_challenge_serializer.data}}, status=status.HTTP_200_OK)
@@ -193,7 +193,7 @@ class IncomeView(APIView):
 # 지출 views
 class AccountMinusView(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request):
         serializer = AccountminusSerializer(data=request.data)
         if serializer.is_valid():
