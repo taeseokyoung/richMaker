@@ -43,6 +43,7 @@ class ChallengeListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Challenge
         fields = [
+            'id',
             'user',
             'challenge_title',
             'challenge_content',
