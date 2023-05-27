@@ -7,6 +7,7 @@ from articles.serializers import (
     IncomeSerializer,
     AccountminusSerializer,
     AccountplusSerializer,
+    AccountminusDetailSerializer,
     ConsumerstyleSerializer,
     ChallengeSerializer, 
     ChallengeMemberSerializer,
@@ -32,7 +33,7 @@ class ChallengeView(APIView):
         각 유저별 북마크한 챌린지 api
         '''
         user = get_object_or_404(User, id=request.user.id)
-        bookmark_user = user.bookmark.all()
+        bookmark_user = user.challenge_bookmark.all()
         serializer = ChallengeUserSerializer(bookmark_user, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -203,15 +204,15 @@ class AccountMinusView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         
-    # # 지출내역 자세히보기
-    # def get(self, request, minus_id):
-    #     minus = get_object_or_404(Accountminus, id=minus_id)
+    # 지출내역 자세히보기
+    def get(self, request, minus_id):
+        minus = get_object_or_404(Accountminus, id=minus_id)
         
-    #     if minus.user != request.user:
-    #         return Response({"error":"작성자만이 확인할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
+        if minus.user != request.user:
+            return Response({"error":"작성자만이 확인할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
 
-    #     serializer = AccountminusSerializer(minus)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = AccountminusDetailSerializer(minus)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     
     def put(self, request, minus_id):
@@ -251,7 +252,7 @@ class AccountShortView(APIView):
             
         minus = Accountminus.objects.filter(date=parsed_date, user_id=request.user.id)
         
-        serializer = AccountminusSerializer(minus, many=True)
+        serializer = AccountminusDetailSerializer(minus, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
