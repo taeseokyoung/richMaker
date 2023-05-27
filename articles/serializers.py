@@ -13,7 +13,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             'challenge_content',
             'amount',
             'period',
-            # 'images',
+            'main_image',
             ]
 
 
@@ -50,6 +50,7 @@ class ChallengeListSerializer(serializers.ModelSerializer):
             'challenge_content',
             'amount',
             'period',
+            'main_image'
         ]
 
 
