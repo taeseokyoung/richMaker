@@ -279,18 +279,18 @@ class AccountPlusView(APIView):
     
 class AccountPlusDetailView(APIView):
     permission_classes = [IsAuthenticated]
-     
+
     # 챌린지별 저축액 모아보기
     def get(self, request, plus_id):
         plus = Accountplus.objects.filter(challenge_id=plus_id, user=request.user)
-        
+
         serializer = AccountplusSerializer(plus, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
 class AccountUpdateView(APIView):
     def put(self, request, challenge_id, date):
         plus = get_object_or_404(Accountplus, challenge_id = challenge_id, date=date)
-        
+
         if plus.user != request.user:
             return Response({"error":"작성자만이 수정할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
 
@@ -304,14 +304,14 @@ class AccountUpdateView(APIView):
 
     def delete(self, request, challenge_id, date):
         plus = get_object_or_404(Accountplus, challenge_id=challenge_id, date=date)
-        
+
         if plus.user != request.user:
             return Response({"error":"작성자만이 삭제할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
 
         plus.delete()
         return Response({"message": "삭제되었습니다."}, status.HTTP_204_NO_CONTENT)
 
-        
+
 
 # 소비경향 view
 class ConsumerStyleView(APIView):
@@ -319,10 +319,15 @@ class ConsumerStyleView(APIView):
         style = ConsumeStyle.objects.all()
         serializer = ConsumerstyleSerializer(style, many=True)
         return Response(serializer.data)
-    
+
 
 # AI 영수증 체크
 class AiCheckView(APIView):
     def post(self, request):
         ai_data = json.dumps(AiCheck(request.data['base64String']))
         return Response(ai_data, status=status.HTTP_200_OK)
+
+
+
+
+

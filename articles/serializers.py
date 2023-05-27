@@ -3,6 +3,7 @@ from articles.models import Accountminus, Accountplus, Income, ConsumeStyle, Cha
 from users.models import User
 
 
+
 # 챌린지
 class ChallengeSerializer(serializers.ModelSerializer):
     class Meta:
