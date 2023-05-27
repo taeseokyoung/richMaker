@@ -9,7 +9,7 @@ def individual_analysis(data):
     grouped_df = grouped_df.reset_index()
     grouped_df['ratio'] = round(grouped_df['all_amount'] / grouped_df['all_amount'].sum() * 100, 2)
     analysis_dict = grouped_df.to_dict(orient='list')
-    return analysis_dict
+    return analysis_dict , grouped_df['all_amount'].sum()
 
 def people_analysis(data):
     df = pd.DataFrame.from_records(data)

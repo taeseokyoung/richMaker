@@ -41,6 +41,7 @@ class ChallengeView(APIView):
         '''
         챌린지 쓰기
         '''
+        print(request.data)
         serializer = ChallengeSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
@@ -132,11 +133,10 @@ class ChallengeListView(APIView):
                     pass
                 else:
                     individual_data = list(all_individual_consume)
-                    analized_individual_data = individual_analysis(individual_data)
+                    analized_individual_data, total_expanse = individual_analysis(individual_data)
                     individual_df = json.dumps(analized_individual_data, ensure_ascii=False)
                     
                 # 일반 소비 성향
-                all_consume_style = ConsumeStyle.objects.all()
                 people_consume_style = Accountminus.objects.filter(date__month=timezone.now().date().month).values('user','date','amount','minus_money','placename','placewhere','consumer_style__style')
                 people_consume_style_list = list(people_consume_style)
                 analized_people_data = people_analysis(people_consume_style_list)
@@ -155,6 +155,7 @@ class ChallengeListView(APIView):
             
             ######## 적정 소비 금액 판단하기
             total_income = Income.objects.filter(user_id=request.user.id).filter(date__month=timezone.now().date().month).aggregate(total=Sum('income_money'))
+            
             ideal_expanse = 0
             if total_income['total'] == None:
                 pass
@@ -164,9 +165,8 @@ class ChallengeListView(APIView):
             ######## 리포트
             current_date = datetime.now().date()
             one_week_ago = current_date - timedelta(days=7)
-            one_week_ago_monday = one_week_ago - timedelta(days=one_week_ago.weekday())
-            current_date_monday = current_date - timedelta(days=current_date.weekday())
-            report_query = Accountminus.objects.filter(user_id=request.user.id).filter(date__gte=one_week_ago_monday, date__lt=current_date_monday).values('user','date','amount','minus_money','placename','placewhere','consumer_style__style')
+            date_string = f'{one_week_ago} ~ {current_date}'
+            report_query = Accountminus.objects.filter(user_id=request.user.id).filter(date__gte=one_week_ago, date__lt=current_date).values('user','date','amount','minus_money','placename','placewhere','consumer_style__style')
             
             report_json = 0
             if report_query.count() == 0:
@@ -176,7 +176,6 @@ class ChallengeListView(APIView):
                 report_data = report(report_query_list)
                 report_json = json.dumps(report_data, ensure_ascii=False)
             
-            print(report_json)
             return Response(
                 {
                     "new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data},
@@ -184,7 +183,9 @@ class ChallengeListView(APIView):
                     "individual": individual_df,
                     "people": people_df,
                     "ideal_expanse": ideal_expanse,
-                    "report": report_json
+                    "total_expanse": total_expanse,
+                    "report": report_json,
+                    "date": date_string
                 },
                 status=status.HTTP_200_OK)
             
