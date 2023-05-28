@@ -38,9 +38,7 @@ A community site that manage consumption habits, participate in challenges, coll
 <br>
 
 
-## <b>💪Tech Stack</b>
-<br>
-
+# <b>💪Tech Stack</b>
 ## <b>👷‍♂️BE👷‍♀️</b>
 
 <img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"> 
