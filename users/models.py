@@ -45,7 +45,7 @@ class User(AbstractBaseUser):
     is_active = models.BooleanField(default=False) # 계정 활성화
 
     # 챌린지 북마크(첼린지 맴버)
-    challenge_bookmark = models.ManyToManyField(Challenge, symmetrical=False, related_name='bookmarking_people', blank=True)
+    bookmark = models.ManyToManyField(Challenge, symmetrical=False, related_name='bookmarking_people', blank=True)
     # 첼린지 좋아요(첼린지 관심 등록)
     challenge_like = models.ManyToManyField(Challenge, symmetrical=False,related_name='liking_people', blank=True)
 

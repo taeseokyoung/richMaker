@@ -12,7 +12,7 @@ urlpatterns = [
     path('post/income/<str:date>/', views.IncomeView.as_view(), name="income_view"),
     # 지출 작성
     path('post/minus/', views.AccountMinusView.as_view(), name="minus_view"),
-    # 수정, 삭제
+    # 지출 수정, 삭제, 하나의 지출 정보 가져오기
     path('post/minus/<int:minus_id>/', views.AccountMinusView.as_view(), name="minus_update"),
     # 지출 날짜별로 보기
     path('post/minus/<str:date>/', views.AccountShortView.as_view(), name="minus_date_view"),
