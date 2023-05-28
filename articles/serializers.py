@@ -149,8 +149,19 @@ class AccountminusDetailSerializer(serializers.ModelSerializer):
     def get_stylename(self, obj):
         return obj.consumer_style.style
         
-# 댓글
+        
+# 저축액 작성, 수정하기
+class AccountplusSerializer(serializers.ModelSerializer):
+    challenge_title = serializers.SerializerMethodField()
 
+    class Meta:
+        model=Accountplus
+        exclude = ('user',)
+        
+    def get_challenge_title(self, obj):
+        return obj.challenge.challenge_title
+        
+    
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

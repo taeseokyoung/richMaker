@@ -16,8 +16,8 @@ from articles.serializers import (
     ChallengeDetailSerializer,
     CommentSerializer,
     CommentCreateSerializer,
-
     )
+
 from articles.models import Income, Accountminus, Accountplus, ConsumeStyle, Challenge, Comment
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -38,7 +38,7 @@ class ChallengeView(APIView):
         각 유저별 북마크한 챌린지 api
         '''
         user = get_object_or_404(User, id=request.user.id)
-        bookmark_user = user.challenge_bookmark.all()
+        bookmark_user = user.bookmark.all()
         serializer = ChallengeUserSerializer(bookmark_user, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -64,6 +64,7 @@ class ChallengeDetailView(APIView):
         challenge = get_object_or_404(Challenge, id=challenge_id)
         serializer = ChallengeDetailSerializer(challenge)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
     def put(self, request, challenge_id):
         '''
         챌린지 수정하기
@@ -156,6 +157,7 @@ class ChallengeListView(APIView):
             if request.user:
                 # 개인 소비 성향
                 individual_df = 0
+                total_expanse = 0
                 all_individual_consume = Accountminus.objects.filter(user_id=request.user.id).filter(date__month=timezone.now().date().month).values('user','date','amount','minus_money','placename','placewhere','consumer_style__style')
                 if all_individual_consume.count() == 0:
                     pass
@@ -165,10 +167,14 @@ class ChallengeListView(APIView):
                     individual_df = json.dumps(analized_individual_data, ensure_ascii=False)
                     
                 # 일반 소비 성향
+                people_df = 0
                 people_consume_style = Accountminus.objects.filter(date__month=timezone.now().date().month).values('user','date','amount','minus_money','placename','placewhere','consumer_style__style')
-                people_consume_style_list = list(people_consume_style)
-                analized_people_data = people_analysis(people_consume_style_list)
-                people_df = json.dumps(analized_people_data, ensure_ascii=False)
+                if people_consume_style.count() == 0:
+                    pass
+                else:
+                    people_consume_style_list = list(people_consume_style)
+                    analized_people_data = people_analysis(people_consume_style_list)
+                    people_df = json.dumps(analized_people_data, ensure_ascii=False)
                 
                 if individual_df != 0:
                     cache = []
@@ -183,6 +189,8 @@ class ChallengeListView(APIView):
             
             ######## 적정 소비 금액 판단하기
             total_income = Income.objects.filter(user_id=request.user.id).filter(date__month=timezone.now().date().month).aggregate(total=Sum('income_money'))
+            total_saving = Accountplus.objects.filter(user_id=request.user.id).filter(date__month=timezone.now().date().month).aggregate(total=Sum('plus_money'))
+            total_minus = Accountminus.objects.filter(user_id=request.user.id).filter(date__month=timezone.now().date().month).aggregate(total=Sum('minus_money'))
             
             ideal_expanse = 0
             if total_income['total'] == None:
@@ -210,8 +218,11 @@ class ChallengeListView(APIView):
                     "top_challenge": {"list": top_challenge_serializer.data},
                     "individual": individual_df,
                     "people": people_df,
+                    "total_income":total_income,
                     "ideal_expanse": ideal_expanse,
                     "total_expanse": total_expanse,
+                    "total_saving": total_saving,
+                    "total_minus": total_minus,
                     "report": report_json,
                     "date": date_string
                 },
@@ -286,8 +297,8 @@ class IncomeView(APIView):
 # 지출 views
 class AccountMinusView(APIView):
     permission_classes = [IsAuthenticated]
-
     def post(self, request):
+        print(request.data)
         serializer = AccountminusSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user = request.user)
@@ -379,7 +390,16 @@ class AccountPlusDetailView(APIView):
         serializer = AccountplusSerializer(plus, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class AccountUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, challenge_id, date):
+        plus = Accountplus.objects.filter(challenge_id=challenge_id, date=date, user=request.user)
+
+        serializer = AccountplusSerializer(plus, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
     def put(self, request, challenge_id, date):
         plus = get_object_or_404(Accountplus, challenge_id = challenge_id, date=date)
 
@@ -421,6 +441,36 @@ class AiCheckView(APIView):
 
 
 
+# 댓글
+class CommentAPIView(APIView):
+    def get(self, request, challenge_id):
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        comments = challenge.comment_set.all()
+        serializer = CommentSerializer(comments,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)    
+    
+
+    def post(self, request, challenge_id):
+        serializer = CommentCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user, challenge_id=challenge_id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UpdateCommentAPIView(APIView):
+    def put(self, request, comment_id):
+        comment = get_object_or_404(Comment, id=comment_id)
+        if request.user == comment.owner:
+            serializer = CommentCreateSerializer(comment, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message":"수정되었습니다."}, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
 # 댓글 
 class CommentAPIView(APIView):
@@ -431,7 +481,6 @@ class CommentAPIView(APIView):
         serializer = CommentSerializer(comments,many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
     def post(self, request, challenge_id):
         serializer = CommentCreateSerializer(data=request.data)
         if serializer.is_valid():
@@ -439,7 +488,6 @@ class CommentAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class UpdateCommentAPIView(APIView):
@@ -455,10 +503,11 @@ class UpdateCommentAPIView(APIView):
         else:
             return Response("권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
 
+
     def delete(self, request, comment_id):
         comment = get_object_or_404(Comment, id=comment_id)
         if request.user == comment.owner:
             comment.delete()
             return Response({"message":"삭제 되었습니다."},status=status.HTTP_204_NO_CONTENT)
         else:
-            return Response("권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
+            return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)

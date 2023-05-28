@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from datetime import date
-
+# from users.models import User
 # Create your models here.
 class Challenge(models.Model):
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
@@ -57,8 +57,7 @@ class Accountminus(models.Model):
 
     def __str__(self):
         return self.placename + str(self.minus_money*self.amount)
-
-      
+    
 # 댓글
 class Comment(models.Model):
     owner = models.ForeignKey('users.User', on_delete=models.CASCADE)
