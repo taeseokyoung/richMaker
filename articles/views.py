@@ -16,6 +16,7 @@ from articles.serializers import (
     CommentSerializer,
     CommentCreateSerializer,
     )
+
 from articles.models import Income, Accountminus, Accountplus, ConsumeStyle, Challenge, Comment
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -52,8 +53,16 @@ class ChallengeView(APIView):
         else:
             return Response (serializer.errors)
 
+
+
+
 class ChallengeDetailView(APIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    def get(self, request, challenge_id):
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        serializer = ChallengeSerializer(challenge)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def put(self, request, challenge_id):
         '''
         챌린지 수정하기
@@ -415,10 +424,10 @@ class CommentAPIView(APIView):
     def get(self, request, challenge_id):
         challenge = get_object_or_404(Challenge, id=challenge_id)
         comments = challenge.comment_set.all()
-
         serializer = CommentSerializer(comments,many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)    
     
+
     def post(self, request, challenge_id):
         serializer = CommentCreateSerializer(data=request.data)
         if serializer.is_valid():
@@ -449,4 +458,3 @@ class UpdateCommentAPIView(APIView):
             return Response({"message":"삭제 되었습니다."},status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
-
