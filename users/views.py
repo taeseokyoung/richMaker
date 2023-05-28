@@ -11,8 +11,7 @@ from django.contrib.auth.hashers import check_password
 
 
 
-# GetLikingChallengeSerializer
-# GetBookingChallengeSerializer
+
 
 class GetLikingChallenge(APIView):
     def get(self,request,user_id):
@@ -172,9 +171,6 @@ class UserAPIView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-          
-# 반례
-# 1. 사용자는 자기 자신의 게시글을 좋아요, 북마크 할 수 있게 할 것인가?
 class UserLikes(APIView):
     # 댓글에 좋아요 누른 사람들의 정보 불러오기
     def get(self, request, comment_id):
@@ -192,15 +188,16 @@ class UserLikes(APIView):
         except AttributeError:
             return Response({"message": "로그인이 필요합니다."}, status=status.HTTP_401_UNAUTHORIZED)
         try:
-            comment = get_object_or_404(Challenge,id=comment_id)
+            challenge = get_object_or_404(Challenge,id=comment_id)
         except AttributeError:
-            return Response({"message": "댓글이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "챌린지 게시글이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+
         # 해당 댓글 정보가 유저의 many to many 필드 데이터에 있다면 좋아요 취소
-        if comment in user.challenge_like.all():
-            user.challenge_like.remove(comment)
+        if challenge in user.challenge_like.all():
+            user.challenge_like.remove(challenge)
             return Response({"message":"좋아요 목록에 제거했습니다."}, status=status.HTTP_204_NO_CONTENT)
         else:
-            user.challenge_like.add(comment)
+            user.challenge_like.add(challenge)
             return Response({"message": "좋아요 목록에 추가하였습니다."}, status=status.HTTP_201_CREATED)
 
 
