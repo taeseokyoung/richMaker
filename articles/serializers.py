@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from articles.models import Accountminus, Accountplus, Income, ConsumeStyle, Challenge
+from articles.models import Accountminus, Accountplus, Income, ConsumeStyle, Challenge, Comment
 from users.models import User
 
 
@@ -144,3 +144,20 @@ class AccountplusSerializer(serializers.ModelSerializer):
         return obj.challenge.challenge_title
         
     
+# 댓글
+class CommentSerializer(serializers.ModelSerializer):
+    owner_name = serializers.SerializerMethodField()
+
+    def get_owner_name(self, obj):
+        return obj.owner.username
+
+    class Meta:
+        model = Comment
+        exclude = ("created_at",)
+
+
+
+class CommentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ("comment",)
