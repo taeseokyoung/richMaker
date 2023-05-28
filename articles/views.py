@@ -13,8 +13,12 @@ from articles.serializers import (
     ChallengeMemberSerializer,
     ChallengeListSerializer,
     ChallengeUserSerializer,
+    ChallengeDetailSerializer,
+    CommentSerializer,
+    CommentCreateSerializer,
     )
-from articles.models import Income, Accountminus, Accountplus, ConsumeStyle, Challenge
+
+from articles.models import Income, Accountminus, Accountplus, ConsumeStyle, Challenge, Comment
 from datetime import datetime, timedelta
 from django.utils import timezone
 from articles.pagination import ChallengePagination
@@ -34,7 +38,7 @@ class ChallengeView(APIView):
         각 유저별 북마크한 챌린지 api
         '''
         user = get_object_or_404(User, id=request.user.id)
-        bookmark_user = user.challenge_bookmark.all()
+        bookmark_user = user.bookmark.all()
         serializer = ChallengeUserSerializer(bookmark_user, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -50,12 +54,22 @@ class ChallengeView(APIView):
         else:
             return Response (serializer.errors)
 
+
 class ChallengeDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
+    def get(self, request, challenge_id):
+        '''
+        북마크 전체 불러오기
+        '''
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        serializer = ChallengeDetailSerializer(challenge)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def put(self, request, challenge_id):
         '''
         챌린지 수정하기
         '''
+        permission_classes = [permissions.IsAuthenticated]
         challenge = get_object_or_404(Challenge, id=challenge_id)
         if request.user.id == challenge.user_id:
             serializer = ChallengeSerializer(challenge, data=request.data)
@@ -82,6 +96,20 @@ class ChallengeDetailView(APIView):
                 return Response("챌린지 삭제 권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
         else:
             return Response("챌린지를 삭제할 수 없습니다.", status=status.HTTP_403_FORBIDDEN)
+
+# 챌린지를 기준으로 유저가 몇명이 참가를 눌렀는지 알려면
+# user
+class ChallengeBookmarkView(APIView):
+    def get(self, request, challenge_id):
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        serializer = ChallengeMemberSerializer(challenge)
+        challengeMember = serializer.data.get('bookmarking_people_count')
+        return Response({'bookmarking_people_count':challengeMember})
+
+        # if challengeMember == request.user.id:
+        #     return Response(serializer.data ,status=status.HTTP_200_OK)
+        # else :
+        #     return Response("실패", status=status.HTTP_403_FORBIDDEN)
 
 
 class ChallengeListView(APIView):
@@ -161,6 +189,8 @@ class ChallengeListView(APIView):
             
             ######## 적정 소비 금액 판단하기
             total_income = Income.objects.filter(user_id=request.user.id).filter(date__month=timezone.now().date().month).aggregate(total=Sum('income_money'))
+            total_saving = Accountplus.objects.filter(user_id=request.user.id).filter(date__month=timezone.now().date().month).aggregate(total=Sum('plus_money'))
+            total_minus = Accountminus.objects.filter(user_id=request.user.id).filter(date__month=timezone.now().date().month).aggregate(total=Sum('minus_money'))
             
             ideal_expanse = 0
             if total_income['total'] == None:
@@ -188,8 +218,11 @@ class ChallengeListView(APIView):
                     "top_challenge": {"list": top_challenge_serializer.data},
                     "individual": individual_df,
                     "people": people_df,
+                    "total_income":total_income,
                     "ideal_expanse": ideal_expanse,
                     "total_expanse": total_expanse,
+                    "total_saving": total_saving,
+                    "total_minus": total_minus,
                     "report": report_json,
                     "date": date_string
                 },
@@ -357,7 +390,16 @@ class AccountPlusDetailView(APIView):
         serializer = AccountplusSerializer(plus, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class AccountUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, challenge_id, date):
+        plus = Accountplus.objects.filter(challenge_id=challenge_id, date=date, user=request.user)
+
+        serializer = AccountplusSerializer(plus, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
     def put(self, request, challenge_id, date):
         plus = get_object_or_404(Accountplus, challenge_id = challenge_id, date=date)
 
@@ -399,5 +441,73 @@ class AiCheckView(APIView):
 
 
 
+# 댓글
+class CommentAPIView(APIView):
+    def get(self, request, challenge_id):
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        comments = challenge.comment_set.all()
+        serializer = CommentSerializer(comments,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)    
+    
+
+    def post(self, request, challenge_id):
+        serializer = CommentCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user, challenge_id=challenge_id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class UpdateCommentAPIView(APIView):
+    def put(self, request, comment_id):
+        comment = get_object_or_404(Comment, id=comment_id)
+        if request.user == comment.owner:
+            serializer = CommentCreateSerializer(comment, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message":"수정되었습니다."}, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+
+# 댓글 
+class CommentAPIView(APIView):
+    def get(self, request, challenge_id):
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        comments = challenge.comment_set.all()
+
+        serializer = CommentSerializer(comments,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, challenge_id):
+        serializer = CommentCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user, challenge_id=challenge_id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UpdateCommentAPIView(APIView):
+    def put(self, request, comment_id):
+        comment = get_object_or_404(Comment, id=comment_id)
+        if request.user == comment.owner:
+            serializer = CommentCreateSerializer(comment, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response("권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
+
+
+    def delete(self, request, comment_id):
+        comment = get_object_or_404(Comment, id=comment_id)
+        if request.user == comment.owner:
+            comment.delete()
+            return Response({"message":"삭제 되었습니다."},status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)

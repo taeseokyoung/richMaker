@@ -11,6 +11,7 @@ class ProfileUserSerializer(serializers.ModelSerializer):
             "email" : {"read_only": True},
         }
 
+        
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -18,6 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "password": {"write_only": True},
         }
+        
     def create(self, validated_data):
         user = super().create(validated_data)
         # 비밀번호 복호화
@@ -32,26 +34,37 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(user.password)
         user.save()
         return user
+    
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("profile_image","username",'id')
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("profile_image","username",'id')
+
 
 class GetBookmarkUserInfo(serializers.ModelSerializer):
-    bookmarking_people = serializers.StringRelatedField(many=True)
+    bookmarking_people = UserProfileSerializer(many=True)
     bookmarking_people_count = serializers.SerializerMethodField()
-
     def get_bookmarking_people_count(self,obj):
         return obj.bookmarking_people.count()
     class Meta:
         model = User
-        fields = ('bookmarking_people','bookmarking_people_count')
+        fields = ('username', 'profile_image', 'bookmarking_people','bookmarking_people_count')
+
 
 class GetCommentLikeUserInfo(serializers.ModelSerializer):
-    liking_people = serializers.StringRelatedField(many=True)
+    liking_people =  UserProfileSerializer(many=True)
     liking_people_count = serializers.SerializerMethodField()
-
     def get_liking_people_count(self,obj):
         return obj.liking_people.count()
     class Meta:
         model = User
-        fields = ('liking_people','liking_people_count')
+        fields = ('liking_people','liking_people_count',)
 
 
 class ChallengeDataSerializer(serializers.ModelSerializer):
@@ -82,3 +95,4 @@ class ComtomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['email'] = user.email
         token['username'] = user.username
         return token
+
