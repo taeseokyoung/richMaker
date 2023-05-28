@@ -60,5 +60,11 @@ class Accountminus(models.Model):
 
       
 class Comment(models.Model):
-    comment_title = models.TextField(default="Comment")
+    owner = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE)
+    comment = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.comment
