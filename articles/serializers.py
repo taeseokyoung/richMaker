@@ -49,6 +49,7 @@ class ChallengeListSerializer(serializers.ModelSerializer):
             'challenge_content',
             'amount',
             'period',
+            'main_image'
         ]
 
 
