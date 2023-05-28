@@ -22,7 +22,6 @@ A community site that manages consumption habits, participates in challenges, co
 <br>
 
 ## Work
------------
 - Signup, Signin, Email Authentication
 - Create challenges, modify and delete them
 - Record your consumption, income, and savings
