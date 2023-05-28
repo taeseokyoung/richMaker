@@ -46,7 +46,6 @@ class ChallengeView(APIView):
         '''
         챌린지 쓰기
         '''
-        print(request.data)
         serializer = ChallengeSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
@@ -298,7 +297,6 @@ class IncomeView(APIView):
 class AccountMinusView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
-        print(request.data)
         serializer = AccountminusSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user = request.user)
