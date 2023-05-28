@@ -31,6 +31,10 @@ urlpatterns = [
     path('challenge/list', views.ChallengeListView.as_view(), name='challenge_list_view'),
     # AI 영수증 체크
     path('post/ai/', views.AiCheckView.as_view(), name='ai_check_view'),
+    # 댓글 작성
+    path('comment/<int:challenge_id>/', views.CommentAPIView.as_view(), name='comment_API_view'),
+    # 댓글 수정 삭제
+    path('update-comment/<int:comment_id>/', views.UpdateCommentAPIView.as_view(), name='update_comment'),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
