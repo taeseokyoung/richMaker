@@ -66,7 +66,7 @@
 
 <br>
 
-## <b>🔧 Version Requirements 🔧</b>
+## <b>👩‍🎨Version Requirements👷‍♀️</b>
 
 - Recommendation : python 3.11 / mysql 8.0
 
