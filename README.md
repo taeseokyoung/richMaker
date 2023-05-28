@@ -7,7 +7,7 @@
 <br>
 
 ## Desc
-A community site that manages consumption habits, participates in challenges, collects assets, and communicates with each other 
+A community site that manage consumption habits, participate in challenges, collect assets, and communicate with each other 
 > 수입, 저축, 지출을 기록할 수 있고, 자신의 소비패턴을 파악할 수 있습니다. 
 > 챌린지 참여를 통해 목표를 이룰 수 있습니다...!
 > 영수증 인식 기능을 통해 직접 기록하지 않아도 소비를 기록할 수 있습니다.
@@ -24,9 +24,9 @@ A community site that manages consumption habits, participates in challenges, co
 ## Work
 - Signup, Signin, Email Authentication
 - Create challenges, modify and delete them
-- Record your consumption, income, and savings
-- Modify and delete your consumption, income, and savings
-- Analyze your consumption
+- Record your consumptions, incomes, and savings
+- Modify and delete your consumptions, incomes, and savings
+- Analyze your consumptions
 - Profile, find your password
 - Write or modify or delete comments so you can communicate each other!!
 
