@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializer import (ComtomTokenObtainPairSerializer,UserSerializer,ProfileUserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo,GetLikingChallengeSerializer,GetBookingChallengeSerializer)
+from .serializer import (ComtomTokenObtainPairSerializer, ProfileUserSerializer, UserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo,GetLikingChallengeSerializer,GetBookingChallengeSerializer)
 from .models import User
 from . import validated
 from articles.models import Challenge

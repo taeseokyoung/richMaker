@@ -18,7 +18,7 @@ urlpatterns = [
     path('post/minus/<str:date>/', views.AccountShortView.as_view(), name="minus_date_view"),
     # 저축 작성
     path('post/plus/', views.AccountPlusView.as_view(), name="plus_view"),
-    # 저축 수정, 삭제
+    # 저축 수정, 삭제, 해당 저축 정보 불러오기
     path('post/plus/<int:challenge_id>/<str:date>/', views.AccountUpdateView.as_view(), name="plus_update_view"),
     # 저축 챌린지별 저축 보기
     path('post/plus/<int:plus_id>/', views.AccountPlusDetailView.as_view(), name="plus_update"),
@@ -31,7 +31,7 @@ urlpatterns = [
     path('challenge/list', views.ChallengeListView.as_view(), name='challenge_list_view'),
     # AI 영수증 체크
     path('post/ai/', views.AiCheckView.as_view(), name='ai_check_view'),
-    # 댓글 작성
+    # 댓글 작성, 가져오기
     path('comment/<int:challenge_id>/', views.CommentAPIView.as_view(), name='comment_API_view'),
     # 댓글 수정 삭제
     path('update-comment/<int:comment_id>/', views.UpdateCommentAPIView.as_view(), name='update_comment'),

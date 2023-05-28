@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from articles.models import Accountminus, Accountplus, Income, ConsumeStyle, Challenge,Comment
+from articles.models import Accountminus, Accountplus, Income, ConsumeStyle, Challenge, Comment
 from users.models import User
 
 
@@ -144,6 +144,7 @@ class AccountplusSerializer(serializers.ModelSerializer):
         return obj.challenge.challenge_title
         
     
+
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -157,6 +158,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_owner_image(self, obj):
         return obj.owner.profile_image.url if obj.owner.profile_image else None
+
     class Meta:
         model = Comment
         exclude = ("created_at",)
@@ -166,4 +168,3 @@ class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ("comment",)
-
