@@ -172,27 +172,32 @@ class UserAPIView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserLikes(APIView):
-    # 댓글에 좋아요 누른 사람들의 정보 불러오기
-    def get(self, request, comment_id):
+    def get(self, request, challenge_id):
         try:
-            comment = get_object_or_404(Challenge, id=comment_id)
+            challenge = get_object_or_404(Challenge, id=challenge_id)
         except AttributeError:
             return Response({"message": "게시글을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = GetCommentLikeUserInfo(comment)
+        serializer = GetCommentLikeUserInfo(challenge)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # 사용자가 댓글을 좋아요, 좋아요 취소
-    def post(self, request,comment_id):
+    def post(self, request,challenge_id):
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        user = get_object_or_404(User,id=request.user.id)
+        if challenge in user.challenge_like.all():
+            return Response({"message": "좋아요 목록에 등록되어 있습니다."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "좋아요 목록에 등록되어 있지 않습니다."}, status=status.HTTP_204_NO_CONTENT)
+
+    def patch(self, request,challenge_id):
         try :
             user = get_object_or_404(User,email = request.user.email)
         except AttributeError:
             return Response({"message": "로그인이 필요합니다."}, status=status.HTTP_401_UNAUTHORIZED)
         try:
-            challenge = get_object_or_404(Challenge,id=comment_id)
+            challenge = get_object_or_404(Challenge,id=challenge_id)
         except AttributeError:
             return Response({"message": "챌린지 게시글이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        # 해당 댓글 정보가 유저의 many to many 필드 데이터에 있다면 좋아요 취소
         if challenge in user.challenge_like.all():
             user.challenge_like.remove(challenge)
             return Response({"message":"좋아요 목록에 제거했습니다."}, status=status.HTTP_204_NO_CONTENT)
@@ -209,8 +214,16 @@ class UserBookMark(APIView):
         serializer = GetBookmarkUserInfo(challenge)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
-    # 사용자가 북마크 등록, 등록 취소
     def post(self, request,challenge_id):
+        challenge = get_object_or_404(Challenge, id=challenge_id)
+        user = get_object_or_404(User,id=request.user.id)
+        if challenge in user.bookmark.all():
+            return Response({"message": "북마크 목록에 등록되어 있습니다."}, status=status.HTTP_200_OK)
+        else :
+            return Response({"message": "북마크 목록에 등록되어 있지 않습니다."}, status=status.HTTP_204_NO_CONTENT)
+
+    # 사용자가 북마크 등록, 등록 취소
+    def patch(self, request,challenge_id):
         try:
             user = get_object_or_404(User, email=request.user.email)
         except AttributeError:
