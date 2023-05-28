@@ -185,8 +185,8 @@ class UserLikes(APIView):
         serializer = GetCommentLikeUserInfo(comment)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # 사용자가 댓글을 좋아요, 좋아요 취소
-    def post(self, request,comment_id):
+    # 사용자가 챌린지를 좋아요, 좋아요 취소
+    def patch(self, request,comment_id):
         try :
             user = get_object_or_404(User,email = request.user.email)
         except AttributeError:

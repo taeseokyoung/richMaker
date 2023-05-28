@@ -45,9 +45,11 @@ class GetBookmarkUserInfo(serializers.ModelSerializer):
         return obj.bookmarking_people.count()
     class Meta:
         model = User
-        fields = ('username', 'profile_image', 'bookmarking_people','bookmarking_people_count')
+        fields = ('bookmarking_people','bookmarking_people_count')
 
 
+
+        
 # class GetBookmarkUserInfo(serializers.ModelSerializer):
 #     bookmarking_people = serializers.StringRelatedField(many=True)
 #     bookmarking_people_count = serializers.SerializerMethodField()

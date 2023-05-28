@@ -426,7 +426,7 @@ class AiCheckView(APIView):
 class CommentAPIView(APIView):
     def get(self, request, challenge_id):
         challenge = get_object_or_404(Challenge, id=challenge_id)
-        comments = challenge.comment_set.all()
+        comments = challenge.comment_set.all().order_by('-created_at')
 
         serializer = CommentSerializer(comments,many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
