@@ -7,9 +7,7 @@
 <br>
 
 ## Desc
------------
-
-## A community site that manages consumption habits, participates in challenges, collects assets, and communicates with each other 
+A community site that manages consumption habits, participates in challenges, collects assets, and communicates with each other 
 > 수입, 저축, 지출을 기록할 수 있고, 자신의 소비패턴을 파악할 수 있습니다. 
 > 챌린지 참여를 통해 목표를 이룰 수 있습니다...!
 > 영수증 인식 기능을 통해 직접 기록하지 않아도 소비를 기록할 수 있습니다.
@@ -19,7 +17,6 @@
 <br>
 
 ## Period : A week
--------------
 > 2023/05/22(Mon) - 2023/05/29(Mon)
 
 <br>
@@ -37,14 +34,12 @@
 <br>
 
 ## GitHub
-------------
 - Frontend GitHub: https://github.com/taeseokyoung/richMaker_front
 
 <br>
 
 
 ## <b>💪Tech Stack</b>
------------
 <br>
 
 ## <b>👷‍♂️BE👷‍♀️</b>
@@ -75,7 +70,8 @@
 <br>
 
 ## <b> 💪Installation </b>
---------
+<br>
+
 - Backend
 ```bash
 git clone <repository url>
@@ -101,14 +97,14 @@ DROP DATABASE db_richmaker;
 <br>
 
 ## ERD  
-------------
+
 > https://www.erdcloud.com/d/T22fcm2YPC6EYJqgJ
 
 <br>
 
 ## <b>✨ Plus ✨ </b>
-------------------
-## Our team repository
+ Our team repository
+
 - 태서경: https://github.com/taeseokyoung
 - 김지수: https://github.com/jisukim908 리치메이커 팀 모두 고생많으셨습니다~~ 사랑하는 여러분~ 언제나 응원하겠습니다~
 - 우소라: https://github.com/sodasora 여러분 모두 사랑해용ㅎㅎㅎ 일주일동안 고생하셨습니다!! 리치메이커 부자되세요~
