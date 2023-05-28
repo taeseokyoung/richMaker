@@ -129,6 +129,7 @@ class ChallengeListView(APIView):
             if request.user:
                 # 개인 소비 성향
                 individual_df = 0
+                total_expanse = 0
                 all_individual_consume = Accountminus.objects.filter(user_id=request.user.id).filter(date__month=timezone.now().date().month).values('user','date','amount','minus_money','placename','placewhere','consumer_style__style')
                 if all_individual_consume.count() == 0:
                     pass
@@ -138,10 +139,14 @@ class ChallengeListView(APIView):
                     individual_df = json.dumps(analized_individual_data, ensure_ascii=False)
                     
                 # 일반 소비 성향
+                people_df = 0
                 people_consume_style = Accountminus.objects.filter(date__month=timezone.now().date().month).values('user','date','amount','minus_money','placename','placewhere','consumer_style__style')
-                people_consume_style_list = list(people_consume_style)
-                analized_people_data = people_analysis(people_consume_style_list)
-                people_df = json.dumps(analized_people_data, ensure_ascii=False)
+                if people_consume_style.count() == 0:
+                    pass
+                else:
+                    people_consume_style_list = list(people_consume_style)
+                    analized_people_data = people_analysis(people_consume_style_list)
+                    people_df = json.dumps(analized_people_data, ensure_ascii=False)
                 
                 if individual_df != 0:
                     cache = []
@@ -259,8 +264,8 @@ class IncomeView(APIView):
 # 지출 views
 class AccountMinusView(APIView):
     permission_classes = [IsAuthenticated]
-
     def post(self, request):
+        print(request.data)
         serializer = AccountminusSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user = request.user)
