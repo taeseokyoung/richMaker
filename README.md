@@ -36,12 +36,11 @@
 
 <br>
 
-## ERD  
+## GitHub
 ------------
-> https://www.erdcloud.com/d/T22fcm2YPC6EYJqgJ
+- Frontend GitHub: https://github.com/taeseokyoung/richMaker_front
 
 <br>
-
 
 
 ## <b>💪Tech Stack</b>
@@ -75,8 +74,6 @@
 
 <br>
 
-
-
 ## <b> 💪Installation </b>
 --------
 - Backend
@@ -103,9 +100,13 @@ DROP DATABASE db_richmaker;
 
 <br>
 
+## ERD  
+------------
+> https://www.erdcloud.com/d/T22fcm2YPC6EYJqgJ
+
+<br>
 
 ## <b>✨ Plus ✨ </b>
-
 ------------------
 ## Our team repository
 - 태서경: https://github.com/taeseokyoung
