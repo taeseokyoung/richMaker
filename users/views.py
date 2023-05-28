@@ -219,7 +219,7 @@ class UserBookMark(APIView):
         user = get_object_or_404(User,id=request.user.id)
         if challenge in user.bookmark.all():
             return Response({"message": "북마크 목록에 등록되어 있습니다."}, status=status.HTTP_200_OK)
-        else :
+        else:
             return Response({"message": "북마크 목록에 등록되어 있지 않습니다."}, status=status.HTTP_204_NO_CONTENT)
 
     # 사용자가 북마크 등록, 등록 취소
