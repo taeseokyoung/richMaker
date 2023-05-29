@@ -3,12 +3,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializer import (ComtomTokenObtainPairSerializer, ProfileUserSerializer, UserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo,GetLikingChallengeSerializer,GetBookingChallengeSerializer)
+from .serializer import (CustomTokenObtainPairSerializer, ProfileUserSerializer, UserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo,GetLikingChallengeSerializer,GetBookingChallengeSerializer)
 from .models import User
 from . import validated
 from articles.models import Challenge
 from django.contrib.auth.hashers import check_password
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+import requests
 
+import os
 
 
 
@@ -70,6 +73,8 @@ class UserView(APIView):
             serializer = UserSerializer(owner,data=request.data,partial=True) # partial=True : 부분 업데이트
             if serializer.is_valid():
                 serializer.save()
+                owner.is_active = False
+                owner.save()
                 return Response({"message": "회원 정보를 수정 했습니다."},status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
@@ -98,7 +103,7 @@ class UserView(APIView):
             serializer = ProfileUserSerializer(owner,data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()
-                return Response({"message":"회원 정보를 수정 했습니다."}.data,status=status.HTTP_200_OK)
+                return Response({"message":"회원 정보를 수정 했습니다."},status=status.HTTP_200_OK)
             else:
                 return Response({"message": "올바른 입력값이 아닙니다."},status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -239,4 +244,79 @@ class UserBookMark(APIView):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = ComtomTokenObtainPairSerializer
+    serializer_class = CustomTokenObtainPairSerializer
+
+
+
+
+############################ 소셜 로그인 ############################
+# 각각의 get 메소드는 프론트에 api key를 전달하기 위한 메소드입니다.
+# 각각의 post 메소드는 프론트에서 받은 데이터로 액세스 토큰과 유저 데이터를 받아와서 SocialLogin함수를 호출합니다.
+# SocialLogin 함수는 해당 정보를 바탕으로 유저가 있다면 로그인하고, 없다면 유저를 생성합니다.
+GOOGLE_API_KEY = os.environ.get("SGOOGLE_API_KEY")
+class GoogleLogin(APIView):
+    """구글 소셜 로그인"""
+
+    GOOGLE_API_KEY = os.environ.get("SGOOGLE_API_KEY")
+    def get(self, request):
+        return Response(GOOGLE_API_KEY, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        access_token = request.data["access_token"]
+        user_data = requests.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        user_data = user_data.json()
+        data = {
+            "profile_image": user_data.get("picture"),
+            "email": user_data.get("email"),
+            "username": user_data.get("name"),
+            "login_type": "google",
+        }
+        return SocialLogin(**data)
+
+
+def SocialLogin(**kwargs):
+    """소셜 로그인, 회원가입"""
+    # 각각 소셜 로그인에서 email, username, login_type등을 받아옴!!
+    data = {k: v for k, v in kwargs.items() if v is not None}
+    # none인 값들은 빼줌
+    email = data.get("email")
+    login_type = data.get("login_type")
+    # 그 중 email이 없으면 회원가입이 불가능하므로
+    # 프론트에서 메시지를 띄워주고, 다시 로그인 페이지로 이동시키기
+    if not email:
+        return Response(
+            {"error": "해당 계정에 email정보가 없습니다."}, status=status.HTTP_400_BAD_REQUEST
+        )
+    try:
+        user = User.objects.get(email=email)
+        # 로그인 타입까지 같으면, 토큰 발행해서 프론트로 보내주기
+        if login_type == user.login_type:
+            refresh = RefreshToken.for_user(user)
+            access_token = CustomTokenObtainPairSerializer.get_token(user)
+            return Response(
+                {"refresh": str(refresh), "access": str(access_token.access_token)},
+                status=status.HTTP_200_OK,
+            )
+        # 유저의 다른 소셜계정으로 로그인한 유저라면, 해당 로그인 타입을 보내줌.
+        # (프론트에서 "{login_type}으로 로그인한 계정이 있습니다!" alert 띄워주기)
+        else:
+            return Response(
+                {"error": f"{user.login_type}으로 이미 가입된 계정이 있습니다!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+    # 유저가 존재하지 않는다면 회원가입시키기
+    except User.DoesNotExist:
+        new_user = User.objects.create(**data)
+        # pw는 사용불가로 지정
+        new_user.set_unusable_password()
+        new_user.save()
+        # 이후 토큰 발급해서 프론트로
+        refresh = RefreshToken.for_user(new_user)
+        access_token = CustomTokenObtainPairSerializer.get_token(new_user)
+        return Response(
+            {"refresh": str(refresh), "access": str(access_token.access_token)},
+            status=status.HTTP_200_OK,
+        )
