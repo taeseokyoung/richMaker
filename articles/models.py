@@ -57,7 +57,8 @@ class Accountminus(models.Model):
 
     def __str__(self):
         return self.placename + str(self.minus_money*self.amount)
-
+    
+# 댓글
 class Comment(models.Model):
     owner = models.ForeignKey('users.User', on_delete=models.CASCADE)
     challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE)

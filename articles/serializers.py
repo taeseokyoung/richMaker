@@ -3,7 +3,6 @@ from articles.models import Accountminus, Accountplus, Income, ConsumeStyle, Cha
 from users.models import User
 
 
-
 # 챌린지
 class ChallengeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,7 +31,7 @@ class ChallengeUserSerializer(serializers.ModelSerializer):
 class ChallengeDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Challenge
-        fields = ['challenge_title','challenge_content','amount','period','main_image','sub_image1','sub_image2','sub_image3']
+        fields = ['id','challenge_title','challenge_content','amount','period','main_image']
 
 
 class ChallengeListSerializer(serializers.ModelSerializer):
@@ -81,7 +80,7 @@ class IncomeSerializer(serializers.ModelSerializer):
         exclude = ('user',)
     
 
-# 지출액 작성, 수정하기
+# 지출액 작성, 자세히 보여주기, 수정하기
 class AccountminusSerializer(serializers.ModelSerializer):
     totalminus = serializers.SerializerMethodField()
     stylename= serializers.SerializerMethodField()
@@ -106,11 +105,33 @@ class AccountminusSerializer(serializers.ModelSerializer):
         return obj.consumer_style.style
     
 
+# 지출액 간단하게 보여주기(지출장소, 총금액)
+# class AccountminusShortSerializer(serializers.ModelSerializer):
+#     totalminus = serializers.SerializerMethodField()
+    
+#     class Meta:
+#         model=Accountminus
+#         fields = ['date','placename','totalminus']
+    
+#     def get_totalminus(self, obj):
+#         return obj.minus_money*obj.amount
+        
+        
+# 저축액 작성, 수정하기
+class AccountplusSerializer(serializers.ModelSerializer):
+    challenge_title = serializers.SerializerMethodField()
+    
+    class Meta:
+        model=Accountplus
+        exclude = ('user',)
+        
+    def get_challenge_title(self, obj):
+        return obj.challenge.challenge_title
+        
 # 지출액 자세히 보여주기
 class AccountminusDetailSerializer(serializers.ModelSerializer):
     totalminus = serializers.SerializerMethodField()
     stylename= serializers.SerializerMethodField()
-    
     class Meta:
         model=Accountminus
         fields = [
@@ -124,10 +145,8 @@ class AccountminusDetailSerializer(serializers.ModelSerializer):
                 'totalminus',
                 'stylename',
                 ]
-        
     def get_totalminus(self, obj):
         return obj.minus_money*obj.amount
-    
     def get_stylename(self, obj):
         return obj.consumer_style.style
         
@@ -144,7 +163,6 @@ class AccountplusSerializer(serializers.ModelSerializer):
         return obj.challenge.challenge_title
         
     
-
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -158,7 +176,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_owner_image(self, obj):
         return obj.owner.profile_image.url if obj.owner.profile_image else None
-
     class Meta:
         model = Comment
         exclude = ("created_at",)
