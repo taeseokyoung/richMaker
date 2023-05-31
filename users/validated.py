@@ -56,3 +56,5 @@ def validated_data(email,password,username):
             return "유저이름이 올바르지 않습니다."
 
     return True
+
+

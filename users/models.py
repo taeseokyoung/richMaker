@@ -1,6 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from articles.models import Challenge, Comment
+import urllib.request
+from django.core.files import File
+from io import BytesIO
+from PIL import Image
+
+
+
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None):
         if not password:
