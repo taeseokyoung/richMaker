@@ -3,40 +3,35 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializer import (ComtomTokenObtainPairSerializer, ProfileUserSerializer, UserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo,GetLikingChallengeSerializer,GetBookingChallengeSerializer)
+from .serializer import (CustomTokenObtainPairSerializer, ProfileUserSerializer, UserSerializer,GetBookmarkUserInfo,GetCommentLikeUserInfo,GetLikingChallengeSerializer,GetBookingChallengeSerializer)
 from .models import User
 from . import validated
 from articles.models import Challenge
 from django.contrib.auth.hashers import check_password
 
 
-
-
-
 class GetLikingChallenge(APIView):
+    """ 사용자가 좋아요 등록한 챌린지 목록 뽑아오기 """
     def get(self,request,user_id):
         owner = get_object_or_404(User,id=user_id)
-        serializer =  GetLikingChallengeSerializer(owner)
+        serializer = GetLikingChallengeSerializer(owner)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
 class GetBookingChallenge(APIView):
+    """ 사용자가 (북마크 등록) 챌린지 참여 목록 뽑아오기 """
     def get(self,request,user_id):
         owner = get_object_or_404(User,id=user_id)
-        serializer =  GetBookingChallengeSerializer(owner)
+        serializer = GetBookingChallengeSerializer(owner)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
-
-
-
 class UserProfile(APIView):
+    """ 사용자가 (북마크 등록) 챌린지 참여 목록 뽑아오기 """
     def patch(self, request, user_id):
         owner = get_object_or_404(User, id=user_id)
         if request.user != owner:
             return Response({"message": "권한이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
         if not validated.validated_username(request.data['username']):
             return Response({"message": "닉네임을 올바르게 작성해 주세요."}, status=status.HTTP_400_BAD_REQUEST)
-
         serializer = ProfileUserSerializer(owner, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -49,7 +44,7 @@ class UserView(APIView):
     def get(self,request,user_id):
         owner = get_object_or_404(User, id=user_id)
         serializer = ProfileUserSerializer(owner)
-        return  Response(serializer.data ,status=status.HTTP_200_OK)
+        return Response(serializer.data ,status=status.HTTP_200_OK)
     # 회원 정보 수정
     def put(self, request, user_id):
         owner = get_object_or_404(User, id=user_id)
@@ -70,6 +65,8 @@ class UserView(APIView):
             serializer = UserSerializer(owner,data=request.data,partial=True) # partial=True : 부분 업데이트
             if serializer.is_valid():
                 serializer.save()
+                owner.is_active = False
+                owner.save()
                 return Response({"message": "회원 정보를 수정 했습니다."},status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
@@ -92,20 +89,19 @@ class UserView(APIView):
     def patch(self,request,user_id):
         if not validated.validated_username(request.data['username']):
             return Response({"message": "이름이 잘못되었습니다! (1~20자, 공백x)"}, status=status.HTTP_400_BAD_REQUEST)
-        # 400,200,404
         owner = get_object_or_404(User, id=user_id)
         if request.user == owner:
             serializer = ProfileUserSerializer(owner,data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()
-                return Response({"message":"회원 정보를 수정 했습니다."}.data,status=status.HTTP_200_OK)
+                return Response({"message":"회원 정보를 수정 했습니다."},status=status.HTTP_200_OK)
             else:
                 return Response({"message": "올바른 입력값이 아닙니다."},status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"message": "권한이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
+# 이메일 발급 요청(비밀번호 찾기에 사용)
 class GetAuthTokenAPIView(APIView):
-    # 이메일 발급 요청(비밀번호 찾기에 사용)
     def post(self, request):
         owner = get_object_or_404(User, email=request.data['email'])
         owner.auth_code = validated.send_email(owner.email)
@@ -113,7 +109,6 @@ class GetAuthTokenAPIView(APIView):
         return Response({"message": "인증 메일을 발송 했습니다."}, status=status.HTTP_200_OK)
 
 class UserAPIView(APIView):
-
     # 회원 가입
     def post(self,request):
         validated_result = validated.validated_data(request.data['email'],request.data['password'],request.data['username'])
@@ -208,12 +203,14 @@ class UserLikes(APIView):
 
 
 class UserBookMark(APIView):
-    # 챌린지 게시글에 북마크 등록한 사람들의 정보 불러오기
+    """북마크 조회, 사용자 북마크 등록 여부 확인 ,등록 및 취소,"""
+    # 챌린지에 북마크 등록한 유저 정보 뽑아오기
     def get(self,request,challenge_id):
         challenge = get_object_or_404(Challenge,id=challenge_id)
         serializer = GetBookmarkUserInfo(challenge)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
+    # 사용자가 챌린지에 북마크 등록 되어잇는지 판단
     def post(self, request,challenge_id):
         challenge = get_object_or_404(Challenge, id=challenge_id)
         user = get_object_or_404(User,id=request.user.id)
@@ -224,12 +221,8 @@ class UserBookMark(APIView):
 
     # 사용자가 북마크 등록, 등록 취소
     def patch(self, request,challenge_id):
-        try:
-            user = get_object_or_404(User, email=request.user.email)
-        except AttributeError:
-            return Response({"message": "로그인이 필요합니다."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = get_object_or_404(User, email=request.user.email)
         challenge = get_object_or_404(Challenge,id=challenge_id)
-
         if challenge in user.bookmark.all():
             user.bookmark.remove(challenge)
             return Response({"message":"북마크 취소했습니다."}, status=status.HTTP_204_NO_CONTENT)
@@ -239,4 +232,11 @@ class UserBookMark(APIView):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = ComtomTokenObtainPairSerializer
+    serializer_class = CustomTokenObtainPairSerializer
+
+
+
+
+
+
+

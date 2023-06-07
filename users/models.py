@@ -1,6 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from articles.models import Challenge, Comment
+import urllib.request
+from django.core.files import File
+from io import BytesIO
+from PIL import Image
+
+
+
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None):
         if not password:
@@ -42,8 +49,15 @@ class User(AbstractBaseUser):
     updated_at = models.DateTimeField("수정일", auto_now=True)
     money = models.PositiveIntegerField(default=0)
     is_admin = models.BooleanField(default=False) # 관리자 권한
-    is_active = models.BooleanField(default=False) # 계정 활성화
-
+    is_active = models.BooleanField(default=True) # 계정 활성화
+    LOGIN_TYPES = [
+        ("normal", "일반"),
+        ("kakao", "카카오"),
+        ("google", "구글"),
+    ]
+    login_type = models.CharField(
+        "로그인유형", max_length=10, choices=LOGIN_TYPES, default="normal"
+    )
     # 챌린지 북마크(첼린지 맴버)
     bookmark = models.ManyToManyField(Challenge, symmetrical=False, related_name='bookmarking_people', blank=True)
     # 첼린지 좋아요(첼린지 관심 등록)

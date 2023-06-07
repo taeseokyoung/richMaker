@@ -210,7 +210,7 @@ class ChallengeListView(APIView):
                 report_query_list = list(report_query)
                 report_data = report(report_query_list)
                 report_json = json.dumps(report_data, ensure_ascii=False)
-            
+
             return Response(
                 {
                     "new_challenge": {"count": new_challenge_count, "list": new_challenge_serializer.data},
@@ -237,7 +237,7 @@ class ChallengeListView(APIView):
             if page is not None:
                 serializer = self.get_paginated_response(self.serializer_class(page, many=True).data)
             else:
-                serializer = self.serializer_class(new_challenge, many=True)
+                serializer = self.serializer_class(top_challenge, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         elif request.GET.get('query') == 'new':

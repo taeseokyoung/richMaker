@@ -101,7 +101,7 @@ class GetBookingChallengeSerializer(serializers.ModelSerializer):
 
 
 # payload 재정의
-class ComtomTokenObtainPairSerializer(TokenObtainPairSerializer):
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
